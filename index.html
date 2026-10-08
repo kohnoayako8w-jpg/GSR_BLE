@@ -22,10 +22,6 @@ body {
     color: #263238;
 }
 
-/* =========================
-   Header
-========================= */
-
 .header {
     background: white;
     padding: 18px 20px;
@@ -78,10 +74,6 @@ body {
     color: #607d8b;
     font-size: 13px;
 }
-
-/* =========================
-   Main
-========================= */
 
 .container {
     max-width: 1000px;
@@ -158,7 +150,7 @@ button:disabled {
 }
 
 /* =========================
-   Measurement control
+   Measurement Control
 ========================= */
 
 .measurement-card {
@@ -196,6 +188,28 @@ button:disabled {
     min-width: 150px;
     font-size: 18px;
     padding: 16px 28px;
+}
+
+/* =========================
+   CSV
+========================= */
+
+.csv-area {
+    margin-top: 15px;
+}
+
+#csvButton {
+    background: #1565c0;
+    color: white;
+    min-width: 220px;
+    font-size: 17px;
+    padding: 15px 24px;
+}
+
+.csv-info {
+    margin-top: 8px;
+    color: #78909c;
+    font-size: 12px;
 }
 
 /* =========================
@@ -422,7 +436,7 @@ canvas {
 
 
 <!-- =========================
-     START / STOP
+     Measurement Control
 ========================= -->
 
 <div class="card measurement-card">
@@ -447,6 +461,23 @@ canvas {
         <button id="stopButton" disabled>
             ■ STOP
         </button>
+
+    </div>
+
+
+    <!-- =====================
+         CSV SAVE
+    ====================== -->
+
+    <div class="csv-area">
+
+        <button id="csvButton" disabled>
+            ↓ CSV保存
+        </button>
+
+        <div class="csv-info">
+            STOP後に測定データをCSVファイルとして保存できます。
+        </div>
 
     </div>
 
@@ -478,6 +509,7 @@ canvas {
     <div class="data-row">
 
         <div class="data-item">
+
             <div class="data-label">
                 Voltage
             </div>
@@ -485,9 +517,12 @@ canvas {
             <div id="voltage" class="data-value">
                 --- V
             </div>
+
         </div>
 
+
         <div class="data-item">
+
             <div class="data-label">
                 Elapsed
             </div>
@@ -495,6 +530,7 @@ canvas {
             <div id="elapsed" class="data-value">
                 0.0 s
             </div>
+
         </div>
 
     </div>
@@ -547,7 +583,7 @@ canvas {
 
 
 <!-- =========================
-     Bluetooth Info
+     Bluetooth Information
 ========================= -->
 
 <div class="card">
@@ -559,6 +595,7 @@ canvas {
     <div class="info-grid">
 
         <div class="info-item">
+
             <div class="info-label">
                 Device
             </div>
@@ -566,9 +603,12 @@ canvas {
             <div class="info-value">
                 ATOM_Lite_GSR
             </div>
+
         </div>
 
+
         <div class="info-item">
+
             <div class="info-label">
                 Sampling Rate
             </div>
@@ -576,9 +616,12 @@ canvas {
             <div class="info-value">
                 100 Hz
             </div>
+
         </div>
 
+
         <div class="info-item">
+
             <div class="info-label">
                 Display
             </div>
@@ -586,6 +629,7 @@ canvas {
             <div class="info-value">
                 10 seconds
             </div>
+
         </div>
 
     </div>
@@ -599,7 +643,7 @@ canvas {
 
 /* =====================================================
    BLE SETTINGS
-   ※ ここは現在動作している設定を変更していません
+   ※ 現在動作している設定を変更していません
 ===================================================== */
 
 const SERVICE_UUID =
@@ -626,7 +670,9 @@ let characteristic = null;
 ===================================================== */
 
 const SAMPLE_RATE = 100;
+
 const DISPLAY_SECONDS = 10;
+
 const MAX_POINTS =
     SAMPLE_RATE * DISPLAY_SECONDS;
 
@@ -666,6 +712,9 @@ const startButton =
 const stopButton =
     document.getElementById("stopButton");
 
+const csvButton =
+    document.getElementById("csvButton");
+
 const measurementStatus =
     document.getElementById("measurementStatus");
 
@@ -700,7 +749,8 @@ function addLog(message) {
     const line =
         document.createElement("div");
 
-    line.className = "log-line";
+    line.className =
+        "log-line";
 
     line.textContent =
         `[${now}] ${message}`;
@@ -839,7 +889,10 @@ disconnectButton.addEventListener(
     "click",
     () => {
 
-        if (device && device.gatt.connected) {
+        if (
+            device &&
+            device.gatt.connected
+        ) {
 
             device.gatt.disconnect();
 
@@ -919,7 +972,9 @@ function handleData(event) {
         !Number.isFinite(gsr) ||
         !Number.isFinite(voltage)
     ) {
+
         return;
+
     }
 
 
@@ -938,7 +993,8 @@ function handleData(event) {
         gsr;
 
     voltageElement.textContent =
-        voltage.toFixed(3) + " V";
+        voltage.toFixed(3) +
+        " V";
 
 
     /* =========================
@@ -987,6 +1043,7 @@ function handleData(event) {
                 voltage
 
         });
+
 
         elapsedElement.textContent =
             (elapsed / 1000).toFixed(1) +
@@ -1052,6 +1109,15 @@ startButton.addEventListener(
             false;
 
 
+        /*
+           新しい測定を開始したので、
+           CSV保存ボタンはいったん無効
+        */
+
+        csvButton.disabled =
+            true;
+
+
         elapsedElement.textContent =
             "0.0 s";
 
@@ -1108,6 +1174,19 @@ stopButton.addEventListener(
             true;
 
 
+        /*
+           データが存在すれば
+           CSV保存ボタンを有効化
+        */
+
+        if (recordedData.length > 0) {
+
+            csvButton.disabled =
+                false;
+
+        }
+
+
         addLog(
             "===== MEASUREMENT STOP ====="
         );
@@ -1120,6 +1199,163 @@ stopButton.addEventListener(
 
         addLog(
             "記録データ: " +
+            recordedData.length +
+            " samples"
+        );
+
+    }
+);
+
+
+/* =====================================================
+   CSV SAVE
+===================================================== */
+
+csvButton.addEventListener(
+    "click",
+    () => {
+
+        if (
+            !recordedData ||
+            recordedData.length === 0
+        ) {
+
+            alert(
+                "保存する測定データがありません。"
+            );
+
+            return;
+
+        }
+
+
+        /*
+           CSVのヘッダー
+        */
+
+        let csv =
+            "timestamp,elapsed_ms,raw_gsr,voltage\n";
+
+
+        /*
+           recordedDataをCSVへ変換
+        */
+
+        recordedData.forEach(
+            (data) => {
+
+                csv +=
+                    data.timestamp +
+                    "," +
+                    data.elapsed_ms +
+                    "," +
+                    data.raw_gsr +
+                    "," +
+                    data.voltage.toFixed(3) +
+                    "\n";
+
+            }
+        );
+
+
+        /*
+           UTF-8 BOMを付ける
+
+           Excelで日本語環境でも
+           文字化けしにくくするため
+        */
+
+        const BOM =
+            "\uFEFF";
+
+
+        const blob =
+            new Blob(
+                [
+                    BOM + csv
+                ],
+                {
+                    type:
+                        "text/csv;charset=utf-8;"
+                }
+            );
+
+
+        /*
+           ファイル名を作成
+        */
+
+        const now =
+            new Date();
+
+
+        const year =
+            now.getFullYear();
+
+        const month =
+            String(
+                now.getMonth() + 1
+            ).padStart(2, "0");
+
+        const day =
+            String(
+                now.getDate()
+            ).padStart(2, "0");
+
+        const hour =
+            String(
+                now.getHours()
+            ).padStart(2, "0");
+
+        const minute =
+            String(
+                now.getMinutes()
+            ).padStart(2, "0");
+
+        const second =
+            String(
+                now.getSeconds()
+            ).padStart(2, "0");
+
+
+        const filename =
+            `SENA_GSR_${year}${month}${day}_${hour}${minute}${second}.csv`;
+
+
+        /*
+           ダウンロード
+        */
+
+        const url =
+            URL.createObjectURL(blob);
+
+
+        const a =
+            document.createElement("a");
+
+        a.href =
+            url;
+
+        a.download =
+            filename;
+
+        document.body.appendChild(a);
+
+        a.click();
+
+        document.body.removeChild(a);
+
+
+        URL.revokeObjectURL(url);
+
+
+        addLog(
+            "CSV保存完了: " +
+            filename
+        );
+
+        addLog(
+            "保存データ: " +
             recordedData.length +
             " samples"
         );
@@ -1418,6 +1654,52 @@ function drawGraph() {
             );
 
 
+        ctx.fillStyle =
+            "#c62828";
+
+        ctx.beginPath();
+
+        ctx.arc(
+            x,
+            y,
+            4,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.fill();
+
+    }
+
+}
+
+
+/* =====================================================
+   WINDOW RESIZE
+===================================================== */
+
+window.addEventListener(
+    "resize",
+    drawGraph
+);
+
+
+/* =====================================================
+   INITIAL LOG
+===================================================== */
+
+addLog(
+    "SENA Health GSR Monitor ready"
+);
+
+addLog(
+    "Bluetooth接続を待っています..."
+);
+
+</script>
+
+</body>
+</html>
         ctx.fillStyle =
             "#c62828";
 
