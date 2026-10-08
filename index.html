@@ -7,533 +7,406 @@
 <title>SENA Health - GSR Monitor</title>
 
 <style>
-
-/* ==================================================
-   Base
-================================================== */
-
 * {
     box-sizing: border-box;
 }
 
 body {
-    font-family:
-        Arial,
-        "Noto Sans JP",
-        sans-serif;
-
     margin: 0;
-    padding: 20px;
-
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
     background: #eef2f5;
-
     color: #263238;
 }
 
-.container {
-    max-width: 900px;
-    margin: auto;
-}
-
-
-/* ==================================================
+/* =========================
    Header
-================================================== */
+========================= */
 
 .header {
-    text-align: center;
-    margin-bottom: 22px;
+    background: white;
+    padding: 18px 20px;
+    border-bottom: 1px solid #d9e0e5;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
 }
 
 .patch-icon {
-    width: 72px;
-    height: 48px;
-
-    margin: 0 auto 12px;
-
-    position: relative;
-
-    background: #dce8ec;
-
-    border: 2px solid #9fb5bd;
-
+    width: 46px;
+    height: 46px;
+    border: 3px solid #607d8b;
     border-radius: 14px;
-
-    box-shadow:
-        0 3px 8px rgba(0,0,0,0.12);
+    background: #f8fafb;
+    position: relative;
+    flex-shrink: 0;
 }
-
-
-/* central sensor */
 
 .patch-icon::before {
     content: "";
-
     position: absolute;
-
-    width: 24px;
-    height: 24px;
-
-    left: 50%;
-    top: 50%;
-
-    transform:
-        translate(-50%, -50%);
-
-    background: #ffffff;
-
-    border: 2px solid #78909c;
-
+    left: 10px;
+    top: 10px;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #607d8b;
     border-radius: 50%;
 }
-
-
-/* electrode/contact */
 
 .patch-icon::after {
     content: "";
-
     position: absolute;
-
-    width: 8px;
-    height: 8px;
-
-    left: 50%;
-    top: 50%;
-
-    transform:
-        translate(-50%, -50%);
-
-    background: #78909c;
-
+    left: 18px;
+    top: 18px;
+    width: 7px;
+    height: 7px;
+    background: #607d8b;
     border-radius: 50%;
 }
 
-
 .brand {
-    font-size: 30px;
-
+    font-size: 25px;
     font-weight: 700;
-
-    letter-spacing: 1px;
-
-    color: #263238;
-
-    margin-bottom: 4px;
-}
-
-.subtitle {
-    font-size: 14px;
-
-    color: #607d8b;
-
     letter-spacing: 0.5px;
 }
 
+.subtitle {
+    color: #607d8b;
+    font-size: 13px;
+}
 
-/* ==================================================
-   Cards
-================================================== */
+/* =========================
+   Main
+========================= */
+
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 18px;
+}
 
 .card {
-    background: #ffffff;
-
-    padding: 20px;
-
-    margin-bottom: 18px;
-
+    background: white;
     border-radius: 12px;
-
-    border: 1px solid #d8e0e4;
-
-    box-shadow:
-        0 2px 8px rgba(38,50,56,0.06);
+    margin-bottom: 16px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    border: 1px solid #e0e6ea;
 }
 
-
-/* ==================================================
-   Connection status
-================================================== */
-
-.connection-card {
-    text-align: center;
-
-    padding: 22px;
+.card-title {
+    font-size: 14px;
+    color: #607d8b;
+    font-weight: 700;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
 }
+
+/* =========================
+   Bluetooth
+========================= */
 
 .connection-title {
-    font-size: 14px;
-
-    color: #607d8b;
-
-    margin-bottom: 8px;
-
-    text-transform: uppercase;
-
-    letter-spacing: 1px;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 10px;
 }
 
 .status {
-    font-size: 27px;
-
+    font-size: 25px;
     font-weight: 700;
-
-    margin: 8px 0 18px;
-
-    color: #546e7a;
+    margin: 12px 0 18px;
 }
 
 .status.connected {
     color: #2e7d32;
 }
 
-.status.connecting {
-    color: #ef6c00;
-}
-
 .status.disconnected {
     color: #c62828;
 }
 
-
-/* ==================================================
-   Buttons
-================================================== */
-
 button {
-    font-size: 16px;
-
-    font-weight: 600;
-
-    padding: 11px 20px;
-
-    margin: 4px;
-
-    border-radius: 7px;
-
-    border: 1px solid transparent;
-
+    border: none;
+    border-radius: 8px;
+    padding: 13px 20px;
+    font-size: 15px;
+    font-weight: 700;
     cursor: pointer;
-
-    transition:
-        opacity 0.2s,
-        transform 0.1s;
+    margin-right: 8px;
+    margin-bottom: 8px;
 }
 
-button:active {
-    transform: scale(0.98);
+button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
 }
 
 #connectButton {
-    background: #1976d2;
-
+    background: #455a64;
     color: white;
 }
 
 #disconnectButton {
-    background: #ffffff;
-
-    color: #c62828;
-
-    border-color: #c62828;
+    background: #eceff1;
+    color: #263238;
 }
 
-button:disabled {
-    background: #cfd8dc;
+/* =========================
+   Measurement control
+========================= */
 
-    color: #78909c;
-
-    border-color: #cfd8dc;
-
-    cursor: default;
+.measurement-card {
+    text-align: center;
 }
 
+.measurement-status {
+    font-size: 16px;
+    color: #607d8b;
+    margin-bottom: 15px;
+}
 
-/* ==================================================
-   Main GSR display
-================================================== */
+#measurementStatus {
+    font-weight: 700;
+}
+
+.start-stop-area {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+#startButton {
+    background: #2e7d32;
+    color: white;
+    min-width: 150px;
+    font-size: 18px;
+    padding: 16px 28px;
+}
+
+#stopButton {
+    background: #c62828;
+    color: white;
+    min-width: 150px;
+    font-size: 18px;
+    padding: 16px 28px;
+}
+
+/* =========================
+   GSR
+========================= */
 
 .gsr-card {
     text-align: center;
-
-    padding: 25px 20px 22px;
 }
 
-.section-label {
-    font-size: 14px;
-
+.gsr-label {
     color: #607d8b;
-
-    letter-spacing: 1px;
-
-    margin-bottom: 8px;
+    font-size: 15px;
+    margin-bottom: 5px;
 }
 
 .gsr-value {
     font-size: 64px;
-
-    line-height: 1;
-
+    line-height: 1.1;
     font-weight: 700;
-
-    color: #263238;
-
-    letter-spacing: 1px;
-
-    margin: 8px 0;
+    letter-spacing: -2px;
 }
 
 .gsr-unit {
-    font-size: 14px;
-
+    font-size: 17px;
     color: #78909c;
-
-    margin-bottom: 22px;
+    margin-bottom: 20px;
 }
 
-
-/* ==================================================
-   Secondary data
-================================================== */
-
-.data-grid {
-    display: grid;
-
-    grid-template-columns:
-        repeat(2, 1fr);
-
-    gap: 12px;
+.data-row {
+    display: flex;
+    justify-content: center;
+    gap: 50px;
+    flex-wrap: wrap;
 }
 
-.data-box {
-    background: #f5f8f9;
-
-    padding: 14px;
-
-    border-radius: 8px;
-
-    text-align: center;
-
-    border: 1px solid #e1e8eb;
+.data-item {
+    min-width: 130px;
 }
 
 .data-label {
     font-size: 12px;
-
     color: #78909c;
-
     margin-bottom: 4px;
 }
 
 .data-value {
     font-size: 22px;
-
     font-weight: 600;
-
-    color: #37474f;
 }
 
-
-/* ==================================================
+/* =========================
    Graph
-================================================== */
-
-.graph-card {
-    padding: 20px;
-}
+========================= */
 
 .graph-header {
     display: flex;
-
     justify-content: space-between;
-
     align-items: center;
-
-    margin-bottom: 10px;
+    gap: 10px;
+    flex-wrap: wrap;
 }
 
 .graph-title {
-    font-size: 19px;
-
-    font-weight: 600;
-
-    color: #37474f;
+    font-size: 18px;
+    font-weight: 700;
 }
 
-.graph-live {
-    font-size: 12px;
-
+.live {
     color: #2e7d32;
-
-    font-weight: 600;
-}
-
-.graph-info {
-    color: #78909c;
-
-    margin-bottom: 12px;
-
+    font-weight: 700;
     font-size: 13px;
 }
 
-.canvas-wrapper {
+.graph-subtitle {
+    font-size: 12px;
+    color: #78909c;
+    margin: 6px 0 12px;
+}
+
+.graph-wrapper {
     width: 100%;
-
-    height: 380px;
-
-    background: #fbfcfd;
-
-    border: 1px solid #cfd8dc;
-
-    border-radius: 8px;
-
     overflow: hidden;
+    border: 1px solid #cfd8dc;
+    border-radius: 8px;
+    background: #fafcfd;
 }
 
 canvas {
-    width: 100%;
-
-    height: 100%;
-
     display: block;
+    width: 100%;
+    height: 350px;
 }
 
+/* =========================
+   Log
+========================= */
 
-/* ==================================================
-   Communication log
-================================================== */
-
-#log {
-    height: 150px;
-
-    overflow-y: auto;
-
+.log {
     background: #263238;
-
-    color: #b9f6ca;
-
-    padding: 10px;
-
-    border-radius: 6px;
-
+    color: #eceff1;
+    border-radius: 8px;
+    padding: 12px;
+    height: 150px;
+    overflow-y: auto;
     font-family: monospace;
-
     font-size: 12px;
-
-    line-height: 1.5;
 }
 
+.log-line {
+    margin-bottom: 4px;
+}
 
-/* ==================================================
-   Bluetooth information
-================================================== */
+/* =========================
+   Info
+========================= */
 
-.info {
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 10px;
+}
+
+.info-item {
+    background: #f5f7f8;
+    border-radius: 8px;
+    padding: 12px;
+}
+
+.info-label {
+    color: #78909c;
     font-size: 12px;
-
-    color: #607d8b;
-
-    line-height: 1.7;
-
-    word-break: break-all;
 }
 
-
-/* ==================================================
-   Section headings
-================================================== */
-
-h2 {
-    font-size: 18px;
-
-    margin-top: 0;
-
-    margin-bottom: 15px;
-
-    color: #37474f;
+.info-value {
+    font-weight: 600;
+    margin-top: 3px;
 }
 
-
-/* ==================================================
+/* =========================
    Mobile
-================================================== */
+========================= */
 
 @media (max-width: 600px) {
 
-    body {
-        padding: 12px;
+    .container {
+        padding: 10px;
+    }
+
+    .card {
+        padding: 15px;
     }
 
     .brand {
-        font-size: 26px;
+        font-size: 21px;
     }
 
-    .status {
-        font-size: 24px;
+    .subtitle {
+        width: 100%;
+        margin-left: 60px;
+        margin-top: -10px;
     }
 
     .gsr-value {
-        font-size: 54px;
+        font-size: 52px;
     }
 
-    .canvas-wrapper {
-        height: 330px;
+    canvas {
+        height: 280px;
     }
 
-    .data-grid {
-        grid-template-columns:
-            repeat(2, 1fr);
-    }
-
-    button {
-        width: 90%;
-
-        margin: 5px auto;
+    .status {
+        font-size: 22px;
     }
 }
-
 </style>
 </head>
 
-
 <body>
 
-<div class="container">
-
-
-<!-- ==================================================
+<!-- =========================
      Header
-================================================== -->
+========================= -->
 
 <div class="header">
 
     <div class="patch-icon"></div>
 
-    <div class="brand">
-        SENA Health
-    </div>
-
-    <div class="subtitle">
-        Wearable GSR Monitoring System
+    <div>
+        <div class="brand">SENA Health</div>
+        <div class="subtitle">
+            Wearable GSR Monitoring System
+        </div>
     </div>
 
 </div>
 
 
-<!-- ==================================================
-     Bluetooth connection
-================================================== -->
+<div class="container">
 
-<div class="card connection-card">
+<!-- =========================
+     Bluetooth Connection
+========================= -->
+
+<div class="card">
 
     <div class="connection-title">
         Bluetooth Connection
     </div>
 
-    <div
-        class="status disconnected"
-        id="status"
-    >
+    <div id="status" class="status disconnected">
         ● 未接続
     </div>
 
@@ -541,69 +414,87 @@ h2 {
         Bluetooth接続
     </button>
 
-    <button
-        id="disconnectButton"
-        disabled
-    >
+    <button id="disconnectButton" disabled>
         切断
     </button>
 
 </div>
 
 
-<!-- ==================================================
-     Main GSR value
-================================================== -->
+<!-- =========================
+     START / STOP
+========================= -->
+
+<div class="card measurement-card">
+
+    <div class="card-title">
+        Measurement Control
+    </div>
+
+    <div class="measurement-status">
+        測定状態：
+        <span id="measurementStatus">
+            STOPPED
+        </span>
+    </div>
+
+    <div class="start-stop-area">
+
+        <button id="startButton">
+            ▶ START
+        </button>
+
+        <button id="stopButton" disabled>
+            ■ STOP
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     Current GSR
+========================= -->
 
 <div class="card gsr-card">
 
-    <div class="section-label">
-        CURRENT GSR
+    <div class="card-title">
+        Current Measurement
     </div>
 
-    <div
-        class="gsr-value"
-        id="rawGSR"
-    >
+    <div class="gsr-label">
+        Raw GSR
+    </div>
+
+    <div id="rawGSR" class="gsr-value">
         ---
     </div>
 
     <div class="gsr-unit">
-        Raw GSR Signal
+        ADC value
     </div>
 
+    <div class="data-row">
 
-    <div class="data-grid">
-
-        <div class="data-box">
-
+        <div class="data-item">
             <div class="data-label">
                 Voltage
             </div>
 
-            <div
-                class="data-value"
-                id="voltage"
-            >
-                ---
+            <div id="voltage" class="data-value">
+                --- V
             </div>
-
         </div>
 
-
-        <div class="data-box">
-
+        <div class="data-item">
             <div class="data-label">
                 Elapsed
             </div>
 
-            <div
-                class="data-value"
-                id="elapsed"
-            >
-                ---
+            <div id="elapsed" class="data-value">
+                0.0 s
             </div>
-
         </div>
 
     </div>
@@ -611,11 +502,11 @@ h2 {
 </div>
 
 
-<!-- ==================================================
-     Real-time graph
-================================================== -->
+<!-- =========================
+     Graph
+========================= -->
 
-<div class="card graph-card">
+<div class="card">
 
     <div class="graph-header">
 
@@ -623,82 +514,93 @@ h2 {
             Real-time GSR
         </div>
 
-        <div class="graph-live">
+        <div class="live">
             ● LIVE
         </div>
 
     </div>
 
-    <div class="graph-info">
+    <div class="graph-subtitle">
         Raw GSR signal · 100 Hz · Recent 10 seconds
     </div>
 
-    <div class="canvas-wrapper">
-
-        <canvas id="gsrChart"></canvas>
-
+    <div class="graph-wrapper">
+        <canvas id="graph"></canvas>
     </div>
 
 </div>
 
 
-<!-- ==================================================
-     Communication log
-================================================== -->
+<!-- =========================
+     Communication Log
+========================= -->
 
 <div class="card">
 
-    <h2>
-        通信ログ
-    </h2>
+    <div class="card-title">
+        Communication Log
+    </div>
 
-    <div id="log"></div>
+    <div id="log" class="log"></div>
 
 </div>
 
 
-<!-- ==================================================
-     Bluetooth information
-================================================== -->
+<!-- =========================
+     Bluetooth Info
+========================= -->
 
 <div class="card">
 
-    <h2>
-        Bluetooth情報
-    </h2>
+    <div class="card-title">
+        Bluetooth Information
+    </div>
 
-    <div class="info">
+    <div class="info-grid">
 
-        <div>
-            Device: ATOM_Lite_GSR
+        <div class="info-item">
+            <div class="info-label">
+                Device
+            </div>
+
+            <div class="info-value">
+                ATOM_Lite_GSR
+            </div>
         </div>
 
-        <div>
-            Service UUID:
-            4fafc201-1fb5-459e-8fcc-c5c9c331914b
+        <div class="info-item">
+            <div class="info-label">
+                Sampling Rate
+            </div>
+
+            <div class="info-value">
+                100 Hz
+            </div>
         </div>
 
-        <div>
-            Characteristic UUID:
-            beb5483e-36e1-4688-b7f5-ea07361b26a8
+        <div class="info-item">
+            <div class="info-label">
+                Display
+            </div>
+
+            <div class="info-value">
+                10 seconds
+            </div>
         </div>
 
     </div>
 
 </div>
-
 
 </div>
 
 
 <script>
 
-/* ==================================================
-   Bluetooth settings
-================================================== */
-
-const DEVICE_NAME =
-    "ATOM_Lite_GSR";
+/* =====================================================
+   BLE SETTINGS
+   ※ ここは現在動作している設定を変更していません
+===================================================== */
 
 const SERVICE_UUID =
     "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
@@ -706,176 +608,173 @@ const SERVICE_UUID =
 const CHARACTERISTIC_UUID =
     "beb5483e-36e1-4688-b7f5-ea07361b26a8";
 
+const DEVICE_NAME =
+    "ATOM_Lite_GSR";
+
+
+/* =====================================================
+   BLE VARIABLES
+===================================================== */
 
 let device = null;
-
+let server = null;
 let characteristic = null;
 
 
-/* ==================================================
-   Graph settings
-================================================== */
+/* =====================================================
+   GSR GRAPH SETTINGS
+===================================================== */
 
 const SAMPLE_RATE = 100;
-
 const DISPLAY_SECONDS = 10;
-
 const MAX_POINTS =
-    SAMPLE_RATE *
-    DISPLAY_SECONDS;
+    SAMPLE_RATE * DISPLAY_SECONDS;
+
+let gsrData = [];
+
+let latestGSR = null;
+let latestVoltage = null;
 
 
-let graphData = [];
+/* =====================================================
+   MEASUREMENT SETTINGS
+===================================================== */
+
+let isMeasuring = false;
+
+let measurementStartTime = null;
+
+let recordedData = [];
 
 
-/* ==================================================
-   Canvas
-================================================== */
+/* =====================================================
+   DOM
+===================================================== */
+
+const statusElement =
+    document.getElementById("status");
+
+const connectButton =
+    document.getElementById("connectButton");
+
+const disconnectButton =
+    document.getElementById("disconnectButton");
+
+const startButton =
+    document.getElementById("startButton");
+
+const stopButton =
+    document.getElementById("stopButton");
+
+const measurementStatus =
+    document.getElementById("measurementStatus");
+
+const rawGSRElement =
+    document.getElementById("rawGSR");
+
+const voltageElement =
+    document.getElementById("voltage");
+
+const elapsedElement =
+    document.getElementById("elapsed");
+
+const logElement =
+    document.getElementById("log");
 
 const canvas =
-    document.getElementById(
-        "gsrChart"
-    );
+    document.getElementById("graph");
 
 const ctx =
     canvas.getContext("2d");
 
 
-/* ==================================================
-   UI elements
-================================================== */
-
-const connectButton =
-    document.getElementById(
-        "connectButton"
-    );
-
-const disconnectButton =
-    document.getElementById(
-        "disconnectButton"
-    );
-
-const status =
-    document.getElementById(
-        "status"
-    );
-
-const rawGSR =
-    document.getElementById(
-        "rawGSR"
-    );
-
-const voltage =
-    document.getElementById(
-        "voltage"
-    );
-
-const elapsed =
-    document.getElementById(
-        "elapsed"
-    );
-
-const log =
-    document.getElementById(
-        "log"
-    );
-
-
-/* ==================================================
-   Log
-================================================== */
+/* =====================================================
+   LOG
+===================================================== */
 
 function addLog(message) {
 
-    const time =
-        new Date()
-        .toLocaleTimeString();
+    const now =
+        new Date().toLocaleTimeString();
 
-    log.innerHTML +=
-        "[" +
-        time +
-        "] " +
-        message +
-        "<br>";
+    const line =
+        document.createElement("div");
 
-    log.scrollTop =
-        log.scrollHeight;
+    line.className = "log-line";
+
+    line.textContent =
+        `[${now}] ${message}`;
+
+    logElement.appendChild(line);
+
+    logElement.scrollTop =
+        logElement.scrollHeight;
 }
 
 
-/* ==================================================
-   Status
-================================================== */
+/* =====================================================
+   STATUS
+===================================================== */
 
-function setStatus(
-    text,
-    type
-) {
+function setStatus(text, type) {
 
-    status.textContent =
+    statusElement.textContent =
         text;
 
-    status.className =
-        "status " +
-        type;
+    statusElement.className =
+        "status " + type;
 }
 
 
-/* ==================================================
-   Bluetooth connect
-================================================== */
+/* =====================================================
+   BLUETOOTH CONNECT
+===================================================== */
 
 connectButton.addEventListener(
     "click",
-    async function() {
+    async () => {
 
         try {
 
-            setStatus(
-                "● 接続中...",
-                "connecting"
-            );
-
             addLog(
-                "Bluetoothデバイスを検索しています..."
+                "Bluetooth deviceを検索しています..."
             );
-
 
             device =
                 await navigator.bluetooth.requestDevice({
 
                     acceptAllDevices: true,
 
-                    optionalServices:
-                        [SERVICE_UUID]
+                    optionalServices: [
+                        SERVICE_UUID
+                    ]
 
                 });
 
 
             addLog(
-                "選択されたデバイス: " +
+                "Device: " +
                 device.name
             );
 
 
             device.addEventListener(
                 "gattserverdisconnected",
-                onDisconnected
+                handleDisconnect
             );
 
 
-            setStatus(
-                "● 接続中...",
-                "connecting"
+            addLog(
+                "GATT serverへ接続しています..."
             );
 
 
-            const server =
+            server =
                 await device.gatt.connect();
 
 
             addLog(
-                "GATT接続成功"
+                "GATT server connected"
             );
 
 
@@ -914,24 +813,15 @@ connectButton.addEventListener(
 
 
             addLog(
-                "GSRデータ受信開始"
+                "GSR notification started"
             );
 
-        }
-
-        catch(error) {
+        } catch (error) {
 
             console.error(error);
 
-
-            setStatus(
-                "● 未接続",
-                "disconnected"
-            );
-
-
             addLog(
-                "エラー: " +
+                "接続エラー: " +
                 error.message
             );
 
@@ -941,18 +831,15 @@ connectButton.addEventListener(
 );
 
 
-/* ==================================================
-   Bluetooth disconnect
-================================================== */
+/* =====================================================
+   BLUETOOTH DISCONNECT
+===================================================== */
 
 disconnectButton.addEventListener(
     "click",
-    function() {
+    () => {
 
-        if(
-            device &&
-            device.gatt.connected
-        ) {
+        if (device && device.gatt.connected) {
 
             device.gatt.disconnect();
 
@@ -962,13 +849,16 @@ disconnectButton.addEventListener(
 );
 
 
-function onDisconnected() {
+/* =====================================================
+   DISCONNECT HANDLER
+===================================================== */
+
+function handleDisconnect() {
 
     setStatus(
         "● 未接続",
         "disconnected"
     );
-
 
     connectButton.disabled =
         false;
@@ -976,118 +866,271 @@ function onDisconnected() {
     disconnectButton.disabled =
         true;
 
-
     addLog(
-        "Bluetooth切断"
+        "Bluetooth disconnected"
     );
 
 }
 
 
-/* ==================================================
-   Receive GSR data
-================================================== */
+/* =====================================================
+   RECEIVE GSR DATA
+===================================================== */
 
 function handleData(event) {
 
     const decoder =
         new TextDecoder();
 
-
     const text =
         decoder.decode(
             event.target.value
-        );
+        ).trim();
 
 
     /*
-       Example:
-       172542,525,0.560
+       Arduinoから
+
+       millis,rawGSR,voltage
+
+       の形式で送られてくる
     */
 
     const parts =
-        text.trim()
-        .split(",");
+        text.split(",");
 
 
-    if(parts.length < 3) {
-
+    if (parts.length < 3) {
         return;
-
     }
 
 
-    const millis =
-        parseInt(parts[0]);
+    const deviceMillis =
+        Number(parts[0]);
 
     const gsr =
-        parseInt(parts[1]);
+        Number(parts[1]);
 
-    const volt =
-        parseFloat(parts[2]);
+    const voltage =
+        Number(parts[2]);
 
 
-    if(
-        isNaN(millis) ||
-        isNaN(gsr) ||
-        isNaN(volt)
+    if (
+        !Number.isFinite(gsr) ||
+        !Number.isFinite(voltage)
     ) {
-
         return;
-
     }
 
 
-    /* ---------------------------------------------
-       Current values
-    --------------------------------------------- */
-
-    rawGSR.textContent =
+    latestGSR =
         gsr;
 
-
-    voltage.textContent =
-        volt.toFixed(3) +
-        " V";
+    latestVoltage =
+        voltage;
 
 
-    elapsed.textContent =
-        (millis / 1000)
-        .toFixed(1) +
-        " s";
+    /* =========================
+       Current display
+    ========================= */
+
+    rawGSRElement.textContent =
+        gsr;
+
+    voltageElement.textContent =
+        voltage.toFixed(3) + " V";
 
 
-    /* ---------------------------------------------
+    /* =========================
        Graph
-    --------------------------------------------- */
+    ========================= */
 
-    graphData.push({
-
-        time: millis,
-
-        gsr: gsr
-
-    });
+    gsrData.push(gsr);
 
 
-    if(
-        graphData.length >
+    if (
+        gsrData.length >
         MAX_POINTS
     ) {
 
-        graphData.shift();
+        gsrData.shift();
 
     }
 
 
     drawGraph();
 
+
+    /* =========================
+       Measurement recording
+    ========================= */
+
+    if (isMeasuring) {
+
+        const elapsed =
+            Date.now() -
+            measurementStartTime;
+
+
+        recordedData.push({
+
+            timestamp:
+                new Date().toISOString(),
+
+            elapsed_ms:
+                elapsed,
+
+            raw_gsr:
+                gsr,
+
+            voltage:
+                voltage
+
+        });
+
+        elapsedElement.textContent =
+            (elapsed / 1000).toFixed(1) +
+            " s";
+
+    }
+
 }
 
 
-/* ==================================================
-   Draw graph
-================================================== */
+/* =====================================================
+   START MEASUREMENT
+===================================================== */
+
+startButton.addEventListener(
+    "click",
+    () => {
+
+        if (!characteristic) {
+
+            alert(
+                "先にBluetooth接続をしてください。"
+            );
+
+            return;
+
+        }
+
+
+        if (isMeasuring) {
+            return;
+        }
+
+
+        /* =========================
+           Recording initialization
+        ========================= */
+
+        recordedData = [];
+
+        measurementStartTime =
+            Date.now();
+
+        isMeasuring =
+            true;
+
+
+        /* =========================
+           UI
+        ========================= */
+
+        measurementStatus.textContent =
+            "MEASURING";
+
+        measurementStatus.style.color =
+            "#2e7d32";
+
+
+        startButton.disabled =
+            true;
+
+        stopButton.disabled =
+            false;
+
+
+        elapsedElement.textContent =
+            "0.0 s";
+
+
+        addLog(
+            "===== MEASUREMENT START ====="
+        );
+
+        addLog(
+            "データ記録を開始しました"
+        );
+
+    }
+);
+
+
+/* =====================================================
+   STOP MEASUREMENT
+===================================================== */
+
+stopButton.addEventListener(
+    "click",
+    () => {
+
+        if (!isMeasuring) {
+            return;
+        }
+
+
+        isMeasuring =
+            false;
+
+
+        const duration =
+            Date.now() -
+            measurementStartTime;
+
+
+        /* =========================
+           UI
+        ========================= */
+
+        measurementStatus.textContent =
+            "STOPPED";
+
+        measurementStatus.style.color =
+            "#c62828";
+
+
+        startButton.disabled =
+            false;
+
+        stopButton.disabled =
+            true;
+
+
+        addLog(
+            "===== MEASUREMENT STOP ====="
+        );
+
+        addLog(
+            "記録時間: " +
+            (duration / 1000).toFixed(2) +
+            " 秒"
+        );
+
+        addLog(
+            "記録データ: " +
+            recordedData.length +
+            " samples"
+        );
+
+    }
+);
+
+
+/* =====================================================
+   DRAW GRAPH
+===================================================== */
 
 function drawGraph() {
 
@@ -1095,18 +1138,22 @@ function drawGraph() {
         canvas.getBoundingClientRect();
 
 
+    const width =
+        rect.width;
+
+    const height =
+        rect.height;
+
+
     const dpr =
-        window.devicePixelRatio ||
-        1;
+        window.devicePixelRatio || 1;
 
 
     canvas.width =
-        rect.width *
-        dpr;
+        width * dpr;
 
     canvas.height =
-        rect.height *
-        dpr;
+        height * dpr;
 
 
     ctx.setTransform(
@@ -1119,13 +1166,6 @@ function drawGraph() {
     );
 
 
-    const width =
-        rect.width;
-
-    const height =
-        rect.height;
-
-
     ctx.clearRect(
         0,
         0,
@@ -1134,150 +1174,113 @@ function drawGraph() {
     );
 
 
-    if(
-        graphData.length < 2
-    ) {
-
-        ctx.fillStyle =
-            "#78909c";
-
-        ctx.font =
-            "15px Arial";
-
-        ctx.fillText(
-            "GSRデータを待っています...",
-            20,
-            30
-        );
-
+    if (gsrData.length < 2) {
         return;
-
     }
 
 
-    /* ---------------------------------------------
+    /* =========================
        Y range
-    --------------------------------------------- */
+    ========================= */
 
-    let minGSR =
-        Math.min(
-            ...graphData.map(
-                p => p.gsr
-            )
-        );
+    let min =
+        Math.min(...gsrData);
 
-
-    let maxGSR =
-        Math.max(
-            ...graphData.map(
-                p => p.gsr
-            )
-        );
+    let max =
+        Math.max(...gsrData);
 
 
-    let range =
-        maxGSR -
-        minGSR;
+    if (min === max) {
 
-
-    if(range < 20) {
-
-        const center =
-            (maxGSR +
-             minGSR) / 2;
-
-
-        minGSR =
-            center - 10;
-
-        maxGSR =
-            center + 10;
-
-        range = 20;
+        min -= 10;
+        max += 10;
 
     }
+
+
+    const range =
+        max - min;
 
 
     const padding =
         range * 0.15;
 
 
-    minGSR -= padding;
+    min -= padding;
+    max += padding;
 
-    maxGSR += padding;
 
+    /* =========================
+       Graph margins
+    ========================= */
 
-    /* ---------------------------------------------
-       Margins
-    --------------------------------------------- */
+    const left =
+        48;
 
-    const marginLeft = 60;
+    const right =
+        15;
 
-    const marginRight = 20;
+    const top =
+        15;
 
-    const marginTop = 25;
-
-    const marginBottom = 42;
+    const bottom =
+        30;
 
 
     const graphWidth =
         width -
-        marginLeft -
-        marginRight;
-
+        left -
+        right;
 
     const graphHeight =
         height -
-        marginTop -
-        marginBottom;
+        top -
+        bottom;
 
 
-    /* ---------------------------------------------
-       Background
-    --------------------------------------------- */
-
-    ctx.fillStyle =
-        "#fbfcfd";
-
-    ctx.fillRect(
-        marginLeft,
-        marginTop,
-        graphWidth,
-        graphHeight
-    );
-
-
-    /* ---------------------------------------------
-       Horizontal grid
-    --------------------------------------------- */
+    /* =========================
+       Grid
+    ========================= */
 
     ctx.strokeStyle =
-        "#dfe6e9";
+        "#d9e0e5";
 
-    ctx.lineWidth = 1;
+    ctx.lineWidth =
+        1;
 
 
-    for(
+    ctx.fillStyle =
+        "#78909c";
+
+    ctx.font =
+        "11px sans-serif";
+
+
+    const gridLines =
+        5;
+
+
+    for (
         let i = 0;
-        i <= 5;
+        i <= gridLines;
         i++
     ) {
 
         const y =
-            marginTop +
+            top +
             graphHeight *
-            i / 5;
+            (i / gridLines);
 
 
         ctx.beginPath();
 
         ctx.moveTo(
-            marginLeft,
+            left,
             y
         );
 
         ctx.lineTo(
-            width - marginRight,
+            width - right,
             y
         );
 
@@ -1285,192 +1288,138 @@ function drawGraph() {
 
 
         const value =
-            maxGSR -
-            (maxGSR - minGSR) *
-            i / 5;
-
-
-        ctx.fillStyle =
-            "#607d8b";
-
-        ctx.font =
-            "12px Arial";
+            max -
+            (max - min) *
+            (i / gridLines);
 
 
         ctx.fillText(
-            Math.round(value),
-            8,
+            value.toFixed(0),
+            5,
             y + 4
         );
 
     }
 
 
-    /* ---------------------------------------------
-       Vertical grid
-    --------------------------------------------- */
+    /* =========================
+       X axis
+    ========================= */
 
     ctx.strokeStyle =
-        "#edf1f2";
-
-
-    for(
-        let i = 0;
-        i <= 5;
-        i++
-    ) {
-
-        const x =
-            marginLeft +
-            graphWidth *
-            i / 5;
-
-
-        ctx.beginPath();
-
-        ctx.moveTo(
-            x,
-            marginTop
-        );
-
-        ctx.lineTo(
-            x,
-            height - marginBottom
-        );
-
-        ctx.stroke();
-
-
-        const seconds =
-            DISPLAY_SECONDS *
-            i / 5;
-
-
-        ctx.fillStyle =
-            "#607d8b";
-
-        ctx.font =
-            "12px Arial";
-
-
-        ctx.fillText(
-            "-" +
-            (
-                DISPLAY_SECONDS -
-                seconds
-            ).toFixed(1) +
-            " s",
-            x - 14,
-            height - 15
-        );
-
-    }
-
-
-    /* ---------------------------------------------
-       Waveform
-    --------------------------------------------- */
+        "#90a4ae";
 
     ctx.beginPath();
 
-
-    graphData.forEach(
-        (point, index) => {
-
-            const x =
-                marginLeft +
-                graphWidth *
-                index /
-                (MAX_POINTS - 1);
-
-
-            const y =
-                marginTop +
-                graphHeight *
-                (
-                    1 -
-                    (
-                        point.gsr -
-                        minGSR
-                    ) /
-                    (
-                        maxGSR -
-                        minGSR
-                    )
-                );
-
-
-            if(index === 0) {
-
-                ctx.moveTo(
-                    x,
-                    y
-                );
-
-            }
-            else {
-
-                ctx.lineTo(
-                    x,
-                    y
-                );
-
-            }
-
-        }
+    ctx.moveTo(
+        left,
+        top + graphHeight
     );
 
-
-    ctx.strokeStyle =
-        "#1565c0";
-
-    ctx.lineWidth = 2.5;
-
-    ctx.lineJoin =
-        "round";
-
-    ctx.lineCap =
-        "round";
+    ctx.lineTo(
+        width - right,
+        top + graphHeight
+    );
 
     ctx.stroke();
 
 
-    /* ---------------------------------------------
-       Current value marker
-    --------------------------------------------- */
+    /* =========================
+       GSR waveform
+    ========================= */
 
-    if(graphData.length > 0) {
+    ctx.strokeStyle =
+        "#1565c0";
 
-        const last =
-            graphData[
-                graphData.length - 1
-            ];
+    ctx.lineWidth =
+        2;
 
+
+    ctx.beginPath();
+
+
+    for (
+        let i = 0;
+        i < gsrData.length;
+        i++
+    ) {
 
         const x =
-            marginLeft +
+            left +
             graphWidth *
             (
-                graphData.length - 1
-            ) /
-            (MAX_POINTS - 1);
+                i /
+                (MAX_POINTS - 1)
+            );
 
 
         const y =
-            marginTop +
+            top +
             graphHeight *
             (
                 1 -
                 (
-                    last.gsr -
-                    minGSR
-                ) /
-                (
-                    maxGSR -
-                    minGSR
+                    (gsrData[i] - min) /
+                    (max - min)
                 )
             );
 
+
+        if (i === 0) {
+
+            ctx.moveTo(
+                x,
+                y
+            );
+
+        } else {
+
+            ctx.lineTo(
+                x,
+                y
+            );
+
+        }
+
+    }
+
+
+    ctx.stroke();
+
+
+    /* =========================
+       Current value marker
+    ========================= */
+
+    if (latestGSR !== null) {
+
+        const lastIndex =
+            gsrData.length - 1;
+
+
+        const x =
+            left +
+            graphWidth *
+            (
+                lastIndex /
+                (MAX_POINTS - 1)
+            );
+
+
+        const y =
+            top +
+            graphHeight *
+            (
+                1 -
+                (
+                    (latestGSR - min) /
+                    (max - min)
+                )
+            );
+
+
+        ctx.fillStyle =
+            "#c62828";
 
         ctx.beginPath();
 
@@ -1482,74 +1431,16 @@ function drawGraph() {
             Math.PI * 2
         );
 
-        ctx.fillStyle =
-            "#1565c0";
-
         ctx.fill();
 
     }
 
-
-    /* ---------------------------------------------
-       Axes
-    --------------------------------------------- */
-
-    ctx.strokeStyle =
-        "#90a4ae";
-
-    ctx.lineWidth = 1;
-
-
-    ctx.beginPath();
-
-    ctx.moveTo(
-        marginLeft,
-        marginTop
-    );
-
-    ctx.lineTo(
-        marginLeft,
-        height - marginBottom
-    );
-
-    ctx.lineTo(
-        width - marginRight,
-        height - marginBottom
-    );
-
-    ctx.stroke();
-
-
-    /* ---------------------------------------------
-       Labels
-    --------------------------------------------- */
-
-    ctx.fillStyle =
-        "#546e7a";
-
-    ctx.font =
-        "12px Arial";
-
-
-    ctx.fillText(
-        "Raw GSR",
-        8,
-        15
-    );
-
-
-    ctx.fillText(
-        "時間（直近10秒）",
-        width - 110,
-        height - 15
-    );
-
 }
 
 
-/* ==================================================
-   Resize
-================================================== */
+/* =====================================================
+   WINDOW RESIZE
+===================================================== */
 
 window.addEventListener(
     "resize",
@@ -1557,11 +1448,17 @@ window.addEventListener(
 );
 
 
-/* ==================================================
-   Initial graph
-================================================== */
+/* =====================================================
+   INITIAL LOG
+===================================================== */
 
-drawGraph();
+addLog(
+    "SENA Health GSR Monitor ready"
+);
+
+addLog(
+    "Bluetooth接続を待っています..."
+);
 
 </script>
 
