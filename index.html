@@ -190,6 +190,73 @@ button:disabled {
     padding: 16px 28px;
 }
 
+.research-id-area {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 18px;
+    text-align: left;
+}
+
+.id-field label {
+    display: block;
+    color: #607d8b;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.id-field input {
+    width: 100%;
+    padding: 12px 13px;
+    border: 1px solid #b0bec5;
+    border-radius: 8px;
+    font-size: 16px;
+    background: #fafcfd;
+    color: #263238;
+}
+
+.id-field input:focus {
+    outline: none;
+    border-color: #1565c0;
+    box-shadow: 0 0 0 2px rgba(21,101,192,0.12);
+}
+
+.hotflash-status {
+    margin: 2px 0 14px;
+    font-size: 14px;
+    color: #607d8b;
+}
+
+#hotFlashStatus {
+    font-weight: 700;
+}
+
+.hotflash-area {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+    margin-bottom: 10px;
+}
+
+#hotFlashStartButton {
+    background: #ef6c00;
+    color: white;
+    min-width: 190px;
+    font-size: 16px;
+    padding: 14px 20px;
+}
+
+#hotFlashEndButton {
+    background: #546e7a;
+    color: white;
+    min-width: 190px;
+    font-size: 16px;
+    padding: 14px 20px;
+}
+
 /* =========================
    CSV
 ========================= */
@@ -384,7 +451,16 @@ canvas {
     .status {
         font-size: 22px;
     }
+
+    .research-id-area {
+        grid-template-columns: 1fr;
+    }
+
+    .hotflash-area button {
+        width: 100%;
+    }
 }
+
 </style>
 </head>
 
@@ -452,6 +528,23 @@ canvas {
         </span>
     </div>
 
+    <div class="research-id-area">
+        <div class="id-field">
+            <label for="participantId">Participant ID</label>
+            <input id="participantId" type="text" placeholder="例：P001" autocomplete="off">
+        </div>
+
+        <div class="id-field">
+            <label for="sessionId">Session ID</label>
+            <input id="sessionId" type="text" placeholder="例：S01" autocomplete="off">
+        </div>
+    </div>
+
+    <div class="hotflash-status">
+        Hot Flash：
+        <span id="hotFlashStatus">INACTIVE</span>
+    </div>
+
     <div class="start-stop-area">
 
         <button id="startButton">
@@ -468,6 +561,17 @@ canvas {
     <!-- =====================
          CSV SAVE
     ====================== -->
+    <div class="hotflash-area">
+        <button id="hotFlashStartButton" disabled>
+            🔥 HOT FLASH START
+        </button>
+
+        <button id="hotFlashEndButton" disabled>
+            ■ HOT FLASH END
+        </button>
+    </div>
+
+
 
     <div class="csv-area">
 
@@ -533,6 +637,12 @@ canvas {
 
         </div>
 
+    </div>
+
+        <div class="data-item">
+            <div class="data-label">Recorded Samples</div>
+            <div id="sampleCount" class="data-value">0</div>
+        </div>
     </div>
 
 </div>
@@ -632,6 +742,16 @@ canvas {
 
         </div>
 
+        <div class="info-item">
+            <div class="info-label">Recording</div>
+            <div class="info-value">START → STOP</div>
+        </div>
+
+        <div class="info-item">
+            <div class="info-label">Event</div>
+            <div class="info-value">Hot Flash START / END</div>
+        </div>
+
     </div>
 
 </div>
@@ -692,6 +812,14 @@ let measurementStartTime = null;
 
 let recordedData = [];
 
+let participantId = "";
+
+let sessionId = "";
+
+let hotFlashActive = false;
+
+let pendingEvent = "";
+
 
 /* =====================================================
    DOM
@@ -714,6 +842,24 @@ const stopButton =
 
 const csvButton =
     document.getElementById("csvButton");
+
+const participantIdElement =
+    document.getElementById("participantId");
+
+const sessionIdElement =
+    document.getElementById("sessionId");
+
+const hotFlashStartButton =
+    document.getElementById("hotFlashStartButton");
+
+const hotFlashEndButton =
+    document.getElementById("hotFlashEndButton");
+
+const hotFlashStatus =
+    document.getElementById("hotFlashStatus");
+
+const sampleCountElement =
+    document.getElementById("sampleCount");
 
 const measurementStatus =
     document.getElementById("measurementStatus");
@@ -1028,7 +1174,15 @@ function handleData(event) {
             measurementStartTime;
 
 
+        const eventName = pendingEvent;
+
         recordedData.push({
+
+            participant_id:
+                participantId,
+
+            session_id:
+                sessionId,
 
             timestamp:
                 new Date().toISOString(),
@@ -1040,9 +1194,20 @@ function handleData(event) {
                 gsr,
 
             voltage:
-                voltage
+                voltage,
+
+            event:
+                eventName
 
         });
+
+        if (pendingEvent !== "") {
+            addLog("イベント記録: " + pendingEvent);
+            pendingEvent = "";
+        }
+
+        sampleCountElement.textContent =
+            recordedData.length;
 
 
         elapsedElement.textContent =
@@ -1079,6 +1244,23 @@ startButton.addEventListener(
 
 
         /* =========================
+           Research information
+        ========================= */
+
+        participantId =
+            participantIdElement.value.trim();
+
+        sessionId =
+            sessionIdElement.value.trim();
+
+        if (!participantId || !sessionId) {
+            alert(
+                "Participant ID と Session ID を入力してください。"
+            );
+            return;
+        }
+
+        /* =========================
            Recording initialization
         ========================= */
 
@@ -1089,6 +1271,13 @@ startButton.addEventListener(
 
         isMeasuring =
             true;
+
+        hotFlashActive = false;
+
+        pendingEvent = "";
+
+        sampleCountElement.textContent =
+            "0";
 
 
         /* =========================
@@ -1107,6 +1296,15 @@ startButton.addEventListener(
 
         stopButton.disabled =
             false;
+
+        participantIdElement.disabled = true;
+        sessionIdElement.disabled = true;
+
+        hotFlashStartButton.disabled = false;
+        hotFlashEndButton.disabled = true;
+
+        hotFlashStatus.textContent = "INACTIVE";
+        hotFlashStatus.style.color = "#607d8b";
 
 
         /*
@@ -1173,6 +1371,17 @@ stopButton.addEventListener(
         stopButton.disabled =
             true;
 
+        participantIdElement.disabled = false;
+        sessionIdElement.disabled = false;
+
+        hotFlashStartButton.disabled = true;
+        hotFlashEndButton.disabled = true;
+
+        hotFlashActive = false;
+
+        hotFlashStatus.textContent = "INACTIVE";
+        hotFlashStatus.style.color = "#607d8b";
+
 
         /*
            データが存在すれば
@@ -1208,6 +1417,54 @@ stopButton.addEventListener(
 
 
 /* =====================================================
+   HOT FLASH EVENTS
+===================================================== */
+
+hotFlashStartButton.addEventListener(
+    "click",
+    () => {
+
+        if (!isMeasuring || hotFlashActive) {
+            return;
+        }
+
+        hotFlashActive = true;
+        pendingEvent = "HOT_FLASH_START";
+
+        hotFlashStatus.textContent = "ACTIVE";
+        hotFlashStatus.style.color = "#ef6c00";
+
+        hotFlashStartButton.disabled = true;
+        hotFlashEndButton.disabled = false;
+
+        addLog("HOT FLASH STARTを記録しました");
+    }
+);
+
+
+hotFlashEndButton.addEventListener(
+    "click",
+    () => {
+
+        if (!isMeasuring || !hotFlashActive) {
+            return;
+        }
+
+        hotFlashActive = false;
+        pendingEvent = "HOT_FLASH_END";
+
+        hotFlashStatus.textContent = "INACTIVE";
+        hotFlashStatus.style.color = "#607d8b";
+
+        hotFlashStartButton.disabled = false;
+        hotFlashEndButton.disabled = true;
+
+        addLog("HOT FLASH ENDを記録しました");
+    }
+);
+
+
+/* =====================================================
    CSV SAVE
 ===================================================== */
 
@@ -1234,7 +1491,7 @@ csvButton.addEventListener(
         */
 
         let csv =
-            "timestamp,elapsed_ms,raw_gsr,voltage\n";
+            "participant_id,session_id,timestamp,elapsed_ms,raw_gsr,voltage,event\n";
 
 
         /*
@@ -1245,6 +1502,10 @@ csvButton.addEventListener(
             (data) => {
 
                 csv +=
+                    data.participant_id +
+                    "," +
+                    data.session_id +
+                    "," +
                     data.timestamp +
                     "," +
                     data.elapsed_ms +
@@ -1252,6 +1513,8 @@ csvButton.addEventListener(
                     data.raw_gsr +
                     "," +
                     data.voltage.toFixed(3) +
+                    "," +
+                    data.event +
                     "\n";
 
             }
@@ -1318,8 +1581,14 @@ csvButton.addEventListener(
             ).padStart(2, "0");
 
 
+        const safeParticipantId =
+            participantId.replace(/[^a-zA-Z0-9_-]/g, "_");
+
+        const safeSessionId =
+            sessionId.replace(/[^a-zA-Z0-9_-]/g, "_");
+
         const filename =
-            `SENA_GSR_${year}${month}${day}_${hour}${minute}${second}.csv`;
+            `SENA_GSR_${safeParticipantId}_${safeSessionId}_${year}${month}${day}_${hour}${minute}${second}.csv`;
 
 
         /*
@@ -1690,6 +1959,10 @@ window.addEventListener(
 
 addLog(
     "SENA Health GSR Monitor ready"
+);
+
+addLog(
+    "Participant ID / Session ID の入力後にSTARTしてください"
 );
 
 addLog(
