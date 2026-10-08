@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>ATOM Lite GSR Monitor</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      color: #222;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: auto;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #666;
+      margin-bottom: 25px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 15px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    }
+
+    .status {
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+      padding: 12px;
+      border-radius: 10px;
+      background: #eee;
+      margin-bottom: 15px;
+    }
+
+    .connected {
+      background: #d9f7df;
+      color: #147a2c;
+    }
+
+    .disconnected {
+      background: #ffe1e1;
+      color: #b00020;
+    }
+
+    button {
+      width: 100%;
+      padding: 15px;
+      border: none;
+      border-radius: 10px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+
+    #connectButton {
+      background: #1976d2;
+      color: white;
+    }
+
+    #disconnectButton {
+      background: #777;
+      color: white;
+    }
+
+    button:disabled {
+      background: #ccc !important;
+      color: #666;
+    }
+
+    .main-value {
+      text-align: center;
+      padding: 20px;
+    }
+
+    .main-value .label {
+      color: #666;
+      font-size: 16px;
+    }
+
+    .main-value .value {
+      font-size: 52px;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+
+    .unit {
+      font-size: 22px;
+      color: #555;
+    }
+
+    .data-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .data-box {
+      background: #f5f5f5;
+      border-radius: 10px;
+      padding: 15px;
+      text-align: center;
+    }
+
+    .data-box .label {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .data-box .value {
+      font-size: 24px;
+      font-weight: bold;
+      margin-top: 8px;
+    }
+
+    #log {
+      height: 150px;
+      overflow-y: auto;
+      background: #111;
+      color: #00ff66;
+      padding: 10px;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 12px;
+    }
+
+    .warning {
+      background: #fff3cd;
+      color: #856404;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      margin-top: 15px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <h1>ATOM Lite GSR Monitor</h1>
+
+  <div class="subtitle">
+    M5Stack ATOM Lite + Grove GSR Sensor
+  </div>
+
+  <!-- Status -->
+  <div id="status" class="status disconnected">
+    Bluetooth 未接続
+  </div>
+
+  <!-- Buttons -->
+  <div class="card">
+
+    <button id="connectButton">
+      🔵 Bluetooth接続
+    </button>
+
+    <button id="disconnectButton" disabled>
+      切断
+    </button>
+
+    <div class="warning">
+      ※ 接続する前に、nRF Connectなど他のアプリとのBLE接続を切断してください。
+    </div>
+
+  </div>
+
+  <!-- Main voltage -->
+  <div class="card main-value">
+
+    <div class="label">
+      GSR Sensor Voltage
+    </div>
+
+    <div class="value">
+      <span id="voltage">---</span>
+      <span class="unit">V</span>
+    </div>
+
+  </div>
+
+  <!-- Data -->
+  <div class="card">
+
+    <div class="data-grid">
+
+      <div class="data-box">
+        <div class="label">
+          Raw GSR
+        </div>
+
+        <div class="value" id="rawGSR">
+          ---
+        </div>
+      </div>
+
+      <div class="data-box">
+        <div class="label">
+          経過時間
+        </div>
+
+        <div class="value" id="elapsed">
+          ---
+        </div>
+
+        <div class="label">
+          ms
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Log -->
+  <div class="card">
+
+    <h3>受信データ</h3>
+
+    <div id="log"></div>
+
+  </div>
+
+</div>
+
+
+<script>
+
+  // =====================================================
+  // BLE設定
+  // =====================================================
+
+  const DEVICE_NAME = "ATOM_Lite_GSR";
+
+  const SERVICE_UUID =
+    "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
+
+  const CHARACTERISTIC_UUID =
+    "beb5483e-36e1-4688-b7f5-ea07361b26a8";
+
+
+  // =====================================================
+  // BLE変数
+  // =====================================================
+
+  let device = null;
+  let characteristic = null;
+
+  let latestData = null;
+
+  const decoder = new TextDecoder("utf-8");
+
+
+  // =====================================================
+  // HTML要素
+  // =====================================================
+
+  const statusElement =
+    document.getElementById("status");
+
+  const connectButton =
+    document.getElementById("connectButton");
+
+  const disconnectButton =
+    document.getElementById("disconnectButton");
+
+  const voltageElement =
+    document.getElementById("voltage");
+
+  const rawGSRElement =
+    document.getElementById("rawGSR");
+
+  const elapsedElement =
+    document.getElementById("elapsed");
+
+  const logElement =
+    document.getElementById("log");
+
+
+  // =====================================================
+  // ログ表示
+  // =====================================================
+
+  function addLog(message) {
+
+    const line =
+      document.createElement("div");
+
+    line.textContent = message;
+
+    logElement.appendChild(line);
+
+    // 最新50行だけ残す
+    while (logElement.children.length > 50) {
+      logElement.removeChild(
+        logElement.firstChild
+      );
+    }
+
+    logElement.scrollTop =
+      logElement.scrollHeight;
+  }
+
+
+  // =====================================================
+  // ステータス変更
+  // =====================================================
+
+  function setStatus(message, connected) {
+
+    statusElement.textContent = message;
+
+    if (connected) {
+
+      statusElement.classList.remove(
+        "disconnected"
+      );
+
+      statusElement.classList.add(
+        "connected"
+      );
+
+    } else {
+
+      statusElement.classList.remove(
+        "connected"
+      );
+
+      statusElement.classList.add(
+        "disconnected"
+      );
+    }
+  }
+
+
+  // =====================================================
+  // Bluetooth接続
+  // =====================================================
+
+  async function connectBluetooth() {
+
+    try {
+
+      setStatus(
+        "Bluetoothデバイスを検索中...",
+        false
+      );
+
+      addLog("Bluetooth検索開始");
+
+
+      // デバイス検索
+      device =
+        await navigator.bluetooth.requestDevice({
+
+          filters: [
+            {
+              name: DEVICE_NAME,
+              services: [SERVICE_UUID]
+            }
+          ]
+
+        });
+
+
+      addLog(
+        "デバイス発見: " +
+        device.name
+      );
+
+
+      // 切断イベント
+      device.addEventListener(
+        "gattserverdisconnected",
+        onDisconnected
+      );
+
+
+      // GATT接続
+      const server =
+        await device.gatt.connect();
+
+      addLog("GATT接続成功");
+
+
+      // Service取得
+      const service =
+        await server.getPrimaryService(
+          SERVICE_UUID
+        );
+
+      addLog("BLE Service取得成功");
+
+
+      // Characteristic取得
+      characteristic =
+        await service.getCharacteristic(
+          CHARACTERISTIC_UUID
+        );
+
+      addLog(
+        "BLE Characteristic取得成功"
+      );
+
+
+      // Notification開始
+      await characteristic.startNotifications();
+
+      characteristic.addEventListener(
+        "characteristicvaluechanged",
+        handleData
+      );
+
+      addLog(
+        "Notification開始"
+      );
+
+
+      // UI
+      setStatus(
+        "🟢 Bluetooth 接続中",
+        true
+      );
+
+      connectButton.disabled = true;
+      disconnectButton.disabled = false;
+
+
+    } catch (error) {
+
+      console.error(error);
+
+      addLog(
+        "ERROR: " + error.message
+      );
+
+      setStatus(
+        "Bluetooth 未接続",
+        false
+      );
+
+    }
+  }
+
+
+  // =====================================================
+  // BLEデータ受信
+  // =====================================================
+
+  function handleData(event) {
+
+    try {
+
+      const value =
+        decoder.decode(
+          event.target.value
+        ).trim();
+
+
+      // 例:
+      // 172542,525,0.560
+
+      const parts =
+        value.split(",");
+
+
+      if (parts.length < 3) {
+        return;
+      }
+
+
+      const millis =
+        parseInt(parts[0]);
+
+      const rawGSR =
+        parseInt(parts[1]);
+
+      const voltage =
+        parseFloat(parts[2]);
+
+
+      if (
+        Number.isNaN(millis) ||
+        Number.isNaN(rawGSR) ||
+        Number.isNaN(voltage)
+      ) {
+        return;
+      }
+
+
+      // 最新データを保存
+      latestData = {
+
+        millis: millis,
+
+        rawGSR: rawGSR,
+
+        voltage: voltage,
+
+        text: value
+
+      };
+
+
+    } catch (error) {
+
+      console.error(
+        "データ解析エラー:",
+        error
+      );
+
+    }
+  }
+
+
+  // =====================================================
+  // 画面更新
+  // =====================================================
+  //
+  // BLEは100 Hzで受信するが、
+  // 画面は10 Hzで更新する。
+  //
+  // これによりAndroidブラウザの負荷を抑える。
+  // =====================================================
+
+  setInterval(function() {
+
+    if (!latestData) {
+      return;
+    }
+
+
+    voltageElement.textContent =
+      latestData.voltage.toFixed(3);
+
+
+    rawGSRElement.textContent =
+      latestData.rawGSR;
+
+
+    elapsedElement.textContent =
+      latestData.millis;
+
+
+    // ログも10回/秒ではなく
+    // 最新データを一定間隔で表示
+    //
+    // 必要なら後でCSV保存機能を追加できます。
+
+  }, 100);
+
+
+  // =====================================================
+  // ログ用データ表示
+  // =====================================================
+
+  let lastLogTime = 0;
+
+  setInterval(function() {
+
+    if (!latestData) {
+      return;
+    }
+
+    const now = Date.now();
+
+    // 1秒に1回だけログ表示
+    if (now - lastLogTime < 1000) {
+      return;
+    }
+
+    lastLogTime = now;
+
+    addLog(
+      latestData.text
+    );
+
+  }, 100);
+
+
+  // =====================================================
+  // 切断
+  // =====================================================
+
+  function disconnectBluetooth() {
+
+    if (
+      device &&
+      device.gatt &&
+      device.gatt.connected
+    ) {
+
+      device.gatt.disconnect();
+
+    }
+
+  }
+
+
+  // =====================================================
+  // 切断イベント
+  // =====================================================
+
+  function onDisconnected() {
+
+    setStatus(
+      "Bluetooth 未接続",
+      false
+    );
+
+    connectButton.disabled = false;
+
+    disconnectButton.disabled = true;
+
+    addLog(
+      "Bluetooth切断"
+    );
+
+  }
+
+
+  // =====================================================
+  // ボタン
+  // =====================================================
+
+  connectButton.addEventListener(
+    "click",
+    connectBluetooth
+  );
+
+
+  disconnectButton.addEventListener(
+    "click",
+    disconnectBluetooth
+  );
+
+
+  // =====================================================
+  // Web Bluetooth対応確認
+  // =====================================================
+
+  if (!navigator.bluetooth) {
+
+    setStatus(
+      "このブラウザはWeb Bluetooth非対応",
+      false
+    );
+
+    connectButton.disabled = true;
+
+    addLog(
+      "Web Bluetoothが利用できません。Android Chromeを使用してください。"
+    );
+
+  }
+
+</script>
+
+</body>
+</html>
