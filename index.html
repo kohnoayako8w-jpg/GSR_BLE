@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>ATOM Lite GSR Monitor</title>
+<title>ATOM Lite GSR Monitor 4</title>
 
 <style>
 
@@ -108,6 +108,13 @@ canvas {
     color: #555;
 }
 
+.graph-info {
+    text-align: center;
+    color: #666;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
 </style>
 </head>
 
@@ -142,6 +149,10 @@ canvas {
 <div class="card">
 
 <h2>リアルタイムGSR</h2>
+
+<div class="graph-info">
+直近10秒のRaw GSRを表示
+</div>
 
 <canvas id="gsrChart"></canvas>
 
@@ -239,9 +250,9 @@ beb5483e-36e1-4688-b7f5-ea07361b26a8
 
 <script>
 
-/* =========================
+/* ==================================================
    Bluetooth settings
-========================= */
+================================================== */
 
 const DEVICE_NAME = "ATOM_Lite_GSR";
 
@@ -256,50 +267,70 @@ let device = null;
 let characteristic = null;
 
 
-/* =========================
+/* ==================================================
    Graph settings
-========================= */
+================================================== */
 
-const MAX_POINTS = 300;
+/*
+   ATOM Lite:
+   100 Hz = 100 samples / second
+
+   Display:
+   10 seconds × 100 Hz
+   = 1000 points
+*/
+
+const SAMPLE_RATE = 100;
+
+const DISPLAY_SECONDS = 10;
+
+const MAX_POINTS =
+    SAMPLE_RATE * DISPLAY_SECONDS;
+
 
 let graphData = [];
 
-let canvas =
-document.getElementById("gsrChart");
 
-let ctx =
-canvas.getContext("2d");
+/* ==================================================
+   Canvas
+================================================== */
+
+const canvas =
+    document.getElementById("gsrChart");
+
+const ctx =
+    canvas.getContext("2d");
 
 
-/* =========================
+/* ==================================================
    UI elements
-========================= */
+================================================== */
 
 const connectButton =
-document.getElementById("connectButton");
+    document.getElementById("connectButton");
 
 const disconnectButton =
-document.getElementById("disconnectButton");
+    document.getElementById("disconnectButton");
 
 const status =
-document.getElementById("status");
+    document.getElementById("status");
 
 const rawGSR =
-document.getElementById("rawGSR");
+    document.getElementById("rawGSR");
 
 const voltage =
-document.getElementById("voltage");
+    document.getElementById("voltage");
 
 const elapsed =
-document.getElementById("elapsed");
+    document.getElementById("elapsed");
 
 const log =
-document.getElementById("log");
+    document.getElementById("log");
 
 
-/* =========================
+/* ==================================================
    Log
-========================= */
+================================================== */
 
 function addLog(message) {
 
@@ -316,521 +347,48 @@ function addLog(message) {
 }
 
 
-/* =========================
+/* ==================================================
    Bluetooth connect
-========================= */
+================================================== */
 
 connectButton.addEventListener(
-"click",
-async function() {
+    "click",
+    async function() {
 
-    try {
+        try {
 
-        status.textContent =
-            "Bluetoothデバイスを検索中...";
+            status.textContent =
+                "Bluetoothデバイスを検索中...";
 
-        addLog(
-            "Bluetoothデバイスを検索しています..."
-        );
-
-
-        device =
-            await navigator.bluetooth.requestDevice({
-
-                acceptAllDevices: true,
-
-                optionalServices:
-                [SERVICE_UUID]
-
-            });
-
-
-        addLog(
-            "選択されたデバイス: " +
-            device.name
-        );
-
-
-        device.addEventListener(
-            "gattserverdisconnected",
-            onDisconnected
-        );
-
-
-        status.textContent =
-            "接続中...";
-
-
-        const server =
-            await device.gatt.connect();
-
-
-        addLog(
-            "GATT接続成功"
-        );
-
-
-        const service =
-            await server.getPrimaryService(
-                SERVICE_UUID
+            addLog(
+                "Bluetoothデバイスを検索しています..."
             );
 
 
-        characteristic =
-            await service.getCharacteristic(
-                CHARACTERISTIC_UUID
+            device =
+                await navigator.bluetooth.requestDevice({
+
+                    acceptAllDevices: true,
+
+                    optionalServices:
+                        [SERVICE_UUID]
+
+                });
+
+
+            addLog(
+                "選択されたデバイス: " +
+                device.name
             );
 
 
-        await characteristic.startNotifications();
+            device.addEventListener(
+                "gattserverdisconnected",
+                onDisconnected
+            );
 
 
-        characteristic.addEventListener(
-            "characteristicvaluechanged",
-            handleData
-        );
+            status.textContent =
+                "接続中...";
 
-
-        status.textContent =
-            "🟢 接続済み";
-
-
-        connectButton.disabled =
-            true;
-
-        disconnectButton.disabled =
-            false;
-
-
-        addLog(
-            "GSRデータ受信開始"
-        );
-
-    }
-
-    catch(error) {
-
-        console.error(error);
-
-        status.textContent =
-            "接続できませんでした";
-
-        addLog(
-            "エラー: " +
-            error.message
-        );
-
-    }
-
-});
-
-
-/* =========================
-   Bluetooth disconnect
-========================= */
-
-disconnectButton.addEventListener(
-"click",
-function() {
-
-    if(device && device.gatt.connected) {
-
-        device.gatt.disconnect();
-
-    }
-
-});
-
-
-function onDisconnected() {
-
-    status.textContent =
-        "🔴 切断";
-
-    connectButton.disabled =
-        false;
-
-    disconnectButton.disabled =
-        true;
-
-    addLog(
-        "Bluetooth切断"
-    );
-
-}
-
-
-/* =========================
-   Receive GSR data
-========================= */
-
-function handleData(event) {
-
-    const decoder =
-        new TextDecoder();
-
-    const text =
-        decoder.decode(
-            event.target.value
-        );
-
-
-    addLog(
-        text
-    );
-
-
-    const parts =
-        text.trim().split(",");
-
-
-    if(parts.length < 3) {
-
-        return;
-
-    }
-
-
-    const millis =
-        parseInt(parts[0]);
-
-    const gsr =
-        parseInt(parts[1]);
-
-    const volt =
-        parseFloat(parts[2]);
-
-
-    if(
-        isNaN(millis) ||
-        isNaN(gsr) ||
-        isNaN(volt)
-    ) {
-
-        return;
-
-    }
-
-
-    /* Update current values */
-
-    rawGSR.textContent =
-        gsr;
-
-    voltage.textContent =
-        volt.toFixed(3) +
-        " V";
-
-    elapsed.textContent =
-        (millis / 1000).toFixed(1) +
-        " s";
-
-
-    /* Add graph point */
-
-    graphData.push({
-
-        time: millis,
-
-        gsr: gsr
-
-    });
-
-
-    if(
-        graphData.length >
-        MAX_POINTS
-    ) {
-
-        graphData.shift();
-
-    }
-
-
-    drawGraph();
-
-}
-
-
-/* =========================
-   Draw graph
-========================= */
-
-function drawGraph() {
-
-    const rect =
-        canvas.getBoundingClientRect();
-
-
-    const dpr =
-        window.devicePixelRatio || 1;
-
-
-    canvas.width =
-        rect.width * dpr;
-
-    canvas.height =
-        rect.height * dpr;
-
-
-    ctx.setTransform(
-        dpr,
-        0,
-        0,
-        dpr,
-        0,
-        0
-    );
-
-
-    const width =
-        rect.width;
-
-    const height =
-        rect.height;
-
-
-    /* Clear */
-
-    ctx.clearRect(
-        0,
-        0,
-        width,
-        height
-    );
-
-
-    if(graphData.length < 2) {
-
-        ctx.font =
-            "16px Arial";
-
-        ctx.fillText(
-            "GSRデータを待っています...",
-            20,
-            30
-        );
-
-        return;
-
-    }
-
-
-    /* Find min / max */
-
-    let minGSR =
-        Math.min(
-            ...graphData.map(
-                p => p.gsr
-            )
-        );
-
-    let maxGSR =
-        Math.max(
-            ...graphData.map(
-                p => p.gsr
-            )
-        );
-
-
-    if(minGSR === maxGSR) {
-
-        minGSR -= 10;
-        maxGSR += 10;
-
-    }
-
-
-    const marginLeft = 50;
-    const marginRight = 10;
-    const marginTop = 20;
-    const marginBottom = 35;
-
-
-    const graphWidth =
-        width -
-        marginLeft -
-        marginRight;
-
-    const graphHeight =
-        height -
-        marginTop -
-        marginBottom;
-
-
-    /* Grid */
-
-    ctx.strokeStyle =
-        "#dddddd";
-
-    ctx.lineWidth = 1;
-
-
-    for(let i = 0; i <= 4; i++) {
-
-        const y =
-            marginTop +
-            graphHeight *
-            i / 4;
-
-
-        ctx.beginPath();
-
-        ctx.moveTo(
-            marginLeft,
-            y
-        );
-
-        ctx.lineTo(
-            width - marginRight,
-            y
-        );
-
-        ctx.stroke();
-
-
-        const value =
-            maxGSR -
-            (maxGSR - minGSR) *
-            i / 4;
-
-
-        ctx.fillStyle =
-            "#555";
-
-        ctx.font =
-            "12px Arial";
-
-        ctx.fillText(
-            Math.round(value),
-            5,
-            y + 4
-        );
-
-    }
-
-
-    /* GSR line */
-
-    ctx.beginPath();
-
-
-    graphData.forEach(
-        (point, index) => {
-
-            const x =
-                marginLeft +
-                graphWidth *
-                index /
-                (graphData.length - 1);
-
-
-            const y =
-                marginTop +
-                graphHeight *
-                (1 -
-                (point.gsr - minGSR) /
-                (maxGSR - minGSR));
-
-
-            if(index === 0) {
-
-                ctx.moveTo(
-                    x,
-                    y
-                );
-
-            }
-            else {
-
-                ctx.lineTo(
-                    x,
-                    y
-                );
-
-            }
-
-        }
-    );
-
-
-    ctx.strokeStyle =
-        "#1976d2";
-
-    ctx.lineWidth = 2;
-
-    ctx.stroke();
-
-
-    /* Axis */
-
-    ctx.strokeStyle =
-        "#333";
-
-    ctx.lineWidth = 1;
-
-
-    ctx.beginPath();
-
-    ctx.moveTo(
-        marginLeft,
-        marginTop
-    );
-
-    ctx.lineTo(
-        marginLeft,
-        height - marginBottom
-    );
-
-    ctx.lineTo(
-        width - marginRight,
-        height - marginBottom
-    );
-
-    ctx.stroke();
-
-
-    /* Labels */
-
-    ctx.fillStyle =
-        "#555";
-
-    ctx.font =
-        "12px Arial";
-
-
-    ctx.fillText(
-        "Raw GSR",
-        5,
-        14
-    );
-
-
-    ctx.fillText(
-        "時間",
-        width - 30,
-        height - 10
-    );
-
-}
-
-
-/* =========================
-   Resize
-========================= */
-
-window.addEventListener(
-"resize",
-drawGraph
-);
-
-
-/* Initial graph */
-
-drawGraph();
-
-</script>
-
-</body>
-</html>
 ```
