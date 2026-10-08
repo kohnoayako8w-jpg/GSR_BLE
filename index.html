@@ -391,4 +391,622 @@ connectButton.addEventListener(
             status.textContent =
                 "接続中...";
 
+
+            const server =
+                await device.gatt.connect();
+
+
+            addLog(
+                "GATT接続成功"
+            );
+
+
+            const service =
+                await server.getPrimaryService(
+                    SERVICE_UUID
+                );
+
+
+            characteristic =
+                await service.getCharacteristic(
+                    CHARACTERISTIC_UUID
+                );
+
+
+            await characteristic.startNotifications();
+
+
+            characteristic.addEventListener(
+                "characteristicvaluechanged",
+                handleData
+            );
+
+
+            status.textContent =
+                "🟢 接続済み";
+
+
+            connectButton.disabled =
+                true;
+
+            disconnectButton.disabled =
+                false;
+
+
+            addLog(
+                "GSRデータ受信開始"
+            );
+
+        }
+
+        catch(error) {
+
+            console.error(error);
+
+            status.textContent =
+                "接続できませんでした";
+
+            addLog(
+                "エラー: " +
+                error.message
+            );
+
+        }
+
+    }
+);
+
+
+/* ==================================================
+   Bluetooth disconnect
+================================================== */
+
+disconnectButton.addEventListener(
+    "click",
+    function() {
+
+        if(
+            device &&
+            device.gatt.connected
+        ) {
+
+            device.gatt.disconnect();
+
+        }
+
+    }
+);
+
+
+function onDisconnected() {
+
+    status.textContent =
+        "🔴 切断";
+
+    connectButton.disabled =
+        false;
+
+    disconnectButton.disabled =
+        true;
+
+    addLog(
+        "Bluetooth切断"
+    );
+
+}
+
+
+/* ==================================================
+   Receive GSR data
+================================================== */
+
+function handleData(event) {
+
+    const decoder =
+        new TextDecoder();
+
+    const text =
+        decoder.decode(
+            event.target.value
+        );
+
+
+    /*
+       Example:
+       172542,525,0.560
+    */
+
+    const parts =
+        text.trim().split(",");
+
+
+    if(parts.length < 3) {
+
+        return;
+
+    }
+
+
+    const millis =
+        parseInt(parts[0]);
+
+    const gsr =
+        parseInt(parts[1]);
+
+    const volt =
+        parseFloat(parts[2]);
+
+
+    if(
+        isNaN(millis) ||
+        isNaN(gsr) ||
+        isNaN(volt)
+    ) {
+
+        return;
+
+    }
+
+
+    /* ---------------------------------------------
+       Update current values
+    --------------------------------------------- */
+
+    rawGSR.textContent =
+        gsr;
+
+    voltage.textContent =
+        volt.toFixed(3) +
+        " V";
+
+    elapsed.textContent =
+        (millis / 1000).toFixed(1) +
+        " s";
+
+
+    /* ---------------------------------------------
+       Add data to graph
+    --------------------------------------------- */
+
+    graphData.push({
+
+        time: millis,
+
+        gsr: gsr
+
+    });
+
+
+    /*
+       Keep only the latest 10 seconds
+    */
+
+    if(
+        graphData.length >
+        MAX_POINTS
+    ) {
+
+        graphData.shift();
+
+    }
+
+
+    drawGraph();
+
+}
+
+
+/* ==================================================
+   Draw graph
+================================================== */
+
+function drawGraph() {
+
+    const rect =
+        canvas.getBoundingClientRect();
+
+
+    const dpr =
+        window.devicePixelRatio || 1;
+
+
+    canvas.width =
+        rect.width * dpr;
+
+    canvas.height =
+        rect.height * dpr;
+
+
+    ctx.setTransform(
+        dpr,
+        0,
+        0,
+        dpr,
+        0,
+        0
+    );
+
+
+    const width =
+        rect.width;
+
+    const height =
+        rect.height;
+
+
+    /* ---------------------------------------------
+       Clear
+    --------------------------------------------- */
+
+    ctx.clearRect(
+        0,
+        0,
+        width,
+        height
+    );
+
+
+    if(graphData.length < 2) {
+
+        ctx.fillStyle =
+            "#666";
+
+        ctx.font =
+            "16px Arial";
+
+        ctx.fillText(
+            "GSRデータを待っています...",
+            20,
+            30
+        );
+
+        return;
+
+    }
+
+
+    /* ---------------------------------------------
+       Y-axis range
+
+       Calculate the recent range.
+
+       Add padding so the waveform does not
+       touch the top/bottom.
+    --------------------------------------------- */
+
+    let minGSR =
+        Math.min(
+            ...graphData.map(
+                p => p.gsr
+            )
+        );
+
+    let maxGSR =
+        Math.max(
+            ...graphData.map(
+                p => p.gsr
+            )
+        );
+
+
+    let range =
+        maxGSR - minGSR;
+
+
+    /*
+       If the signal is very stable,
+       use a minimum range.
+    */
+
+    if(range < 20) {
+
+        const center =
+            (maxGSR + minGSR) / 2;
+
+        minGSR =
+            center - 10;
+
+        maxGSR =
+            center + 10;
+
+        range = 20;
+
+    }
+
+
+    /*
+       Add 15% padding
+    */
+
+    const padding =
+        range * 0.15;
+
+
+    minGSR -= padding;
+
+    maxGSR += padding;
+
+
+    /* ---------------------------------------------
+       Graph margins
+    --------------------------------------------- */
+
+    const marginLeft = 55;
+
+    const marginRight = 15;
+
+    const marginTop = 25;
+
+    const marginBottom = 40;
+
+
+    const graphWidth =
+        width -
+        marginLeft -
+        marginRight;
+
+    const graphHeight =
+        height -
+        marginTop -
+        marginBottom;
+
+
+    /* ---------------------------------------------
+       Horizontal grid
+    --------------------------------------------- */
+
+    ctx.strokeStyle =
+        "#dddddd";
+
+    ctx.lineWidth = 1;
+
+
+    for(
+        let i = 0;
+        i <= 4;
+        i++
+    ) {
+
+        const y =
+            marginTop +
+            graphHeight *
+            i / 4;
+
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            marginLeft,
+            y
+        );
+
+        ctx.lineTo(
+            width - marginRight,
+            y
+        );
+
+        ctx.stroke();
+
+
+        const value =
+            maxGSR -
+            (maxGSR - minGSR) *
+            i / 4;
+
+
+        ctx.fillStyle =
+            "#555";
+
+        ctx.font =
+            "12px Arial";
+
+
+        ctx.fillText(
+            Math.round(value),
+            5,
+            y + 4
+        );
+
+    }
+
+
+    /* ---------------------------------------------
+       Vertical grid
+
+       0, 2.5, 5, 7.5, 10 seconds
+    --------------------------------------------- */
+
+    ctx.strokeStyle =
+        "#eeeeee";
+
+
+    for(
+        let i = 0;
+        i <= 4;
+        i++
+    ) {
+
+        const x =
+            marginLeft +
+            graphWidth *
+            i / 4;
+
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            x,
+            marginTop
+        );
+
+        ctx.lineTo(
+            x,
+            height - marginBottom
+        );
+
+        ctx.stroke();
+
+
+        const seconds =
+            DISPLAY_SECONDS *
+            i / 4;
+
+
+        ctx.fillStyle =
+            "#555";
+
+        ctx.font =
+            "12px Arial";
+
+
+        ctx.fillText(
+            "-" +
+            (DISPLAY_SECONDS - seconds).toFixed(1) +
+            " s",
+            x - 12,
+            height - 15
+        );
+
+    }
+
+
+    /* ---------------------------------------------
+       GSR waveform
+    --------------------------------------------- */
+
+    ctx.beginPath();
+
+
+    graphData.forEach(
+        (point, index) => {
+
+            const x =
+                marginLeft +
+                graphWidth *
+                index /
+                (MAX_POINTS - 1);
+
+
+            const y =
+                marginTop +
+                graphHeight *
+                (
+                    1 -
+                    (
+                        point.gsr -
+                        minGSR
+                    ) /
+                    (
+                        maxGSR -
+                        minGSR
+                    )
+                );
+
+
+            if(index === 0) {
+
+                ctx.moveTo(
+                    x,
+                    y
+                );
+
+            }
+            else {
+
+                ctx.lineTo(
+                    x,
+                    y
+                );
+
+            }
+
+        }
+    );
+
+
+    ctx.strokeStyle =
+        "#1976d2";
+
+    ctx.lineWidth = 2;
+
+    ctx.stroke();
+
+
+    /* ---------------------------------------------
+       Axes
+    --------------------------------------------- */
+
+    ctx.strokeStyle =
+        "#333";
+
+    ctx.lineWidth = 1;
+
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        marginLeft,
+        marginTop
+    );
+
+    ctx.lineTo(
+        marginLeft,
+        height - marginBottom
+    );
+
+    ctx.lineTo(
+        width - marginRight,
+        height - marginBottom
+    );
+
+    ctx.stroke();
+
+
+    /* ---------------------------------------------
+       Labels
+    --------------------------------------------- */
+
+    ctx.fillStyle =
+        "#555";
+
+    ctx.font =
+        "12px Arial";
+
+
+    ctx.fillText(
+        "Raw GSR",
+        5,
+        15
+    );
+
+
+    ctx.fillText(
+        "時間（直近10秒）",
+        width - 105,
+        height - 15
+    );
+
+}
+
+
+/* ==================================================
+   Resize
+================================================== */
+
+window.addEventListener(
+    "resize",
+    drawGraph
+);
+
+
+/* ==================================================
+   Initial graph
+================================================== */
+
+drawGraph();
+
+</script>
+
+</body>
+</html>
 ```
