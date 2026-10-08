@@ -1,20 +1,33 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>ATOM Lite GSR Monitor</title>
+<title>SENA Health - GSR Monitor</title>
 
 <style>
 
+/* ==================================================
+   Base
+================================================== */
+
+* {
+    box-sizing: border-box;
+}
+
 body {
-    font-family: Arial, sans-serif;
+    font-family:
+        Arial,
+        "Noto Sans JP",
+        sans-serif;
+
     margin: 0;
     padding: 20px;
-    background: #f5f5f5;
-    color: #222;
+
+    background: #eef2f5;
+
+    color: #263238;
 }
 
 .container {
@@ -22,97 +35,461 @@ body {
     margin: auto;
 }
 
-h1 {
+
+/* ==================================================
+   Header
+================================================== */
+
+.header {
     text-align: center;
+    margin-bottom: 22px;
 }
+
+.patch-icon {
+    width: 72px;
+    height: 48px;
+
+    margin: 0 auto 12px;
+
+    position: relative;
+
+    background: #dce8ec;
+
+    border: 2px solid #9fb5bd;
+
+    border-radius: 14px;
+
+    box-shadow:
+        0 3px 8px rgba(0,0,0,0.12);
+}
+
+
+/* central sensor */
+
+.patch-icon::before {
+    content: "";
+
+    position: absolute;
+
+    width: 24px;
+    height: 24px;
+
+    left: 50%;
+    top: 50%;
+
+    transform:
+        translate(-50%, -50%);
+
+    background: #ffffff;
+
+    border: 2px solid #78909c;
+
+    border-radius: 50%;
+}
+
+
+/* electrode/contact */
+
+.patch-icon::after {
+    content: "";
+
+    position: absolute;
+
+    width: 8px;
+    height: 8px;
+
+    left: 50%;
+    top: 50%;
+
+    transform:
+        translate(-50%, -50%);
+
+    background: #78909c;
+
+    border-radius: 50%;
+}
+
+
+.brand {
+    font-size: 30px;
+
+    font-weight: 700;
+
+    letter-spacing: 1px;
+
+    color: #263238;
+
+    margin-bottom: 4px;
+}
+
+.subtitle {
+    font-size: 14px;
+
+    color: #607d8b;
+
+    letter-spacing: 0.5px;
+}
+
+
+/* ==================================================
+   Cards
+================================================== */
 
 .card {
-    background: white;
+    background: #ffffff;
+
     padding: 20px;
-    margin-bottom: 20px;
+
+    margin-bottom: 18px;
+
     border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+
+    border: 1px solid #d8e0e4;
+
+    box-shadow:
+        0 2px 8px rgba(38,50,56,0.06);
 }
 
+
+/* ==================================================
+   Connection status
+================================================== */
+
+.connection-card {
+    text-align: center;
+
+    padding: 22px;
+}
+
+.connection-title {
+    font-size: 14px;
+
+    color: #607d8b;
+
+    margin-bottom: 8px;
+
+    text-transform: uppercase;
+
+    letter-spacing: 1px;
+}
+
+.status {
+    font-size: 27px;
+
+    font-weight: 700;
+
+    margin: 8px 0 18px;
+
+    color: #546e7a;
+}
+
+.status.connected {
+    color: #2e7d32;
+}
+
+.status.connecting {
+    color: #ef6c00;
+}
+
+.status.disconnected {
+    color: #c62828;
+}
+
+
+/* ==================================================
+   Buttons
+================================================== */
+
 button {
-    font-size: 18px;
-    padding: 12px 20px;
-    margin: 5px;
-    border-radius: 8px;
-    border: none;
+    font-size: 16px;
+
+    font-weight: 600;
+
+    padding: 11px 20px;
+
+    margin: 4px;
+
+    border-radius: 7px;
+
+    border: 1px solid transparent;
+
     cursor: pointer;
+
+    transition:
+        opacity 0.2s,
+        transform 0.1s;
+}
+
+button:active {
+    transform: scale(0.98);
 }
 
 #connectButton {
     background: #1976d2;
+
     color: white;
 }
 
 #disconnectButton {
-    background: #d32f2f;
-    color: white;
+    background: #ffffff;
+
+    color: #c62828;
+
+    border-color: #c62828;
 }
 
 button:disabled {
-    background: #aaa;
+    background: #cfd8dc;
+
+    color: #78909c;
+
+    border-color: #cfd8dc;
+
+    cursor: default;
 }
 
-.status {
-    font-weight: bold;
-    margin: 10px 0;
+
+/* ==================================================
+   Main GSR display
+================================================== */
+
+.gsr-card {
+    text-align: center;
+
+    padding: 25px 20px 22px;
 }
+
+.section-label {
+    font-size: 14px;
+
+    color: #607d8b;
+
+    letter-spacing: 1px;
+
+    margin-bottom: 8px;
+}
+
+.gsr-value {
+    font-size: 64px;
+
+    line-height: 1;
+
+    font-weight: 700;
+
+    color: #263238;
+
+    letter-spacing: 1px;
+
+    margin: 8px 0;
+}
+
+.gsr-unit {
+    font-size: 14px;
+
+    color: #78909c;
+
+    margin-bottom: 22px;
+}
+
+
+/* ==================================================
+   Secondary data
+================================================== */
 
 .data-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
+
+    grid-template-columns:
+        repeat(2, 1fr);
+
+    gap: 12px;
 }
 
 .data-box {
-    background: #f0f0f0;
-    padding: 15px;
+    background: #f5f8f9;
+
+    padding: 14px;
+
     border-radius: 8px;
+
     text-align: center;
+
+    border: 1px solid #e1e8eb;
 }
 
 .data-label {
-    font-size: 14px;
-    color: #666;
+    font-size: 12px;
+
+    color: #78909c;
+
+    margin-bottom: 4px;
 }
 
 .data-value {
-    font-size: 24px;
-    font-weight: bold;
-    margin-top: 5px;
+    font-size: 22px;
+
+    font-weight: 600;
+
+    color: #37474f;
+}
+
+
+/* ==================================================
+   Graph
+================================================== */
+
+.graph-card {
+    padding: 20px;
+}
+
+.graph-header {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    margin-bottom: 10px;
+}
+
+.graph-title {
+    font-size: 19px;
+
+    font-weight: 600;
+
+    color: #37474f;
+}
+
+.graph-live {
+    font-size: 12px;
+
+    color: #2e7d32;
+
+    font-weight: 600;
+}
+
+.graph-info {
+    color: #78909c;
+
+    margin-bottom: 12px;
+
+    font-size: 13px;
+}
+
+.canvas-wrapper {
+    width: 100%;
+
+    height: 380px;
+
+    background: #fbfcfd;
+
+    border: 1px solid #cfd8dc;
+
+    border-radius: 8px;
+
+    overflow: hidden;
 }
 
 canvas {
     width: 100%;
-    height: 350px;
-    border: 1px solid #ccc;
-    background: white;
+
+    height: 100%;
+
+    display: block;
 }
+
+
+/* ==================================================
+   Communication log
+================================================== */
 
 #log {
     height: 150px;
+
     overflow-y: auto;
-    background: #111;
-    color: #00ff00;
+
+    background: #263238;
+
+    color: #b9f6ca;
+
     padding: 10px;
+
+    border-radius: 6px;
+
     font-family: monospace;
+
     font-size: 12px;
+
+    line-height: 1.5;
 }
+
+
+/* ==================================================
+   Bluetooth information
+================================================== */
 
 .info {
-    font-size: 13px;
-    color: #555;
+    font-size: 12px;
+
+    color: #607d8b;
+
+    line-height: 1.7;
+
+    word-break: break-all;
 }
 
-.graph-info {
-    text-align: center;
-    color: #666;
-    margin-bottom: 10px;
-    font-size: 14px;
+
+/* ==================================================
+   Section headings
+================================================== */
+
+h2 {
+    font-size: 18px;
+
+    margin-top: 0;
+
+    margin-bottom: 15px;
+
+    color: #37474f;
+}
+
+
+/* ==================================================
+   Mobile
+================================================== */
+
+@media (max-width: 600px) {
+
+    body {
+        padding: 12px;
+    }
+
+    .brand {
+        font-size: 26px;
+    }
+
+    .status {
+        font-size: 24px;
+    }
+
+    .gsr-value {
+        font-size: 54px;
+    }
+
+    .canvas-wrapper {
+        height: 330px;
+    }
+
+    .data-grid {
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+
+    button {
+        width: 90%;
+
+        margin: 5px auto;
+    }
 }
 
 </style>
@@ -123,129 +500,195 @@ canvas {
 
 <div class="container">
 
-<h1>🧪 ATOM Lite GSR Monitor</h1>
 
+<!-- ==================================================
+     Header
+================================================== -->
+
+<div class="header">
+
+    <div class="patch-icon"></div>
+
+    <div class="brand">
+        SENA Health
+    </div>
+
+    <div class="subtitle">
+        Wearable GSR Monitoring System
+    </div>
+
+</div>
+
+
+<!-- ==================================================
+     Bluetooth connection
+================================================== -->
+
+<div class="card connection-card">
+
+    <div class="connection-title">
+        Bluetooth Connection
+    </div>
+
+    <div
+        class="status disconnected"
+        id="status"
+    >
+        ● 未接続
+    </div>
+
+    <button id="connectButton">
+        Bluetooth接続
+    </button>
+
+    <button
+        id="disconnectButton"
+        disabled
+    >
+        切断
+    </button>
+
+</div>
+
+
+<!-- ==================================================
+     Main GSR value
+================================================== -->
+
+<div class="card gsr-card">
+
+    <div class="section-label">
+        CURRENT GSR
+    </div>
+
+    <div
+        class="gsr-value"
+        id="rawGSR"
+    >
+        ---
+    </div>
+
+    <div class="gsr-unit">
+        Raw GSR Signal
+    </div>
+
+
+    <div class="data-grid">
+
+        <div class="data-box">
+
+            <div class="data-label">
+                Voltage
+            </div>
+
+            <div
+                class="data-value"
+                id="voltage"
+            >
+                ---
+            </div>
+
+        </div>
+
+
+        <div class="data-box">
+
+            <div class="data-label">
+                Elapsed
+            </div>
+
+            <div
+                class="data-value"
+                id="elapsed"
+            >
+                ---
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ==================================================
+     Real-time graph
+================================================== -->
+
+<div class="card graph-card">
+
+    <div class="graph-header">
+
+        <div class="graph-title">
+            Real-time GSR
+        </div>
+
+        <div class="graph-live">
+            ● LIVE
+        </div>
+
+    </div>
+
+    <div class="graph-info">
+        Raw GSR signal · 100 Hz · Recent 10 seconds
+    </div>
+
+    <div class="canvas-wrapper">
+
+        <canvas id="gsrChart"></canvas>
+
+    </div>
+
+</div>
+
+
+<!-- ==================================================
+     Communication log
+================================================== -->
 
 <div class="card">
 
-<h2>Bluetooth</h2>
+    <h2>
+        通信ログ
+    </h2>
 
-<button id="connectButton">
-🔵 Bluetooth接続
-</button>
-
-<button id="disconnectButton" disabled>
-🔴 切断
-</button>
-
-<div class="status" id="status">
-未接続
-</div>
+    <div id="log"></div>
 
 </div>
 
 
+<!-- ==================================================
+     Bluetooth information
+================================================== -->
 
 <div class="card">
 
-<h2>リアルタイムGSR</h2>
+    <h2>
+        Bluetooth情報
+    </h2>
 
-<div class="graph-info">
-直近10秒のRaw GSRを表示
-</div>
+    <div class="info">
 
-<canvas id="gsrChart"></canvas>
+        <div>
+            Device: ATOM_Lite_GSR
+        </div>
 
-</div>
+        <div>
+            Service UUID:
+            4fafc201-1fb5-459e-8fcc-c5c9c331914b
+        </div>
 
+        <div>
+            Characteristic UUID:
+            beb5483e-36e1-4688-b7f5-ea07361b26a8
+        </div>
 
-
-<div class="card">
-
-<h2>現在のデータ</h2>
-
-<div class="data-grid">
-
-<div class="data-box">
-
-<div class="data-label">
-Raw GSR
-</div>
-
-<div class="data-value" id="rawGSR">
----
-</div>
+    </div>
 
 </div>
 
 
-<div class="data-box">
-
-<div class="data-label">
-Voltage
 </div>
-
-<div class="data-value" id="voltage">
----
-</div>
-
-</div>
-
-
-<div class="data-box">
-
-<div class="data-label">
-Elapsed
-</div>
-
-<div class="data-value" id="elapsed">
----
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-
-
-<div class="card">
-
-<h2>通信ログ</h2>
-
-<div id="log"></div>
-
-</div>
-
-
-
-<div class="card">
-
-<h2>Bluetooth情報</h2>
-
-<div class="info">
-
-<div>
-Device: ATOM_Lite_GSR
-</div>
-
-<div>
-Service UUID:
-4fafc201-1fb5-459e-8fcc-c5c9c331914b
-</div>
-
-<div>
-Characteristic UUID:
-beb5483e-36e1-4688-b7f5-ea07361b26a8
-</div>
-
-</div>
-
-</div>
-
-</div>
-
 
 
 <script>
@@ -254,16 +697,18 @@ beb5483e-36e1-4688-b7f5-ea07361b26a8
    Bluetooth settings
 ================================================== */
 
-const DEVICE_NAME = "ATOM_Lite_GSR";
+const DEVICE_NAME =
+    "ATOM_Lite_GSR";
 
 const SERVICE_UUID =
-"4fafc201-1fb5-459e-8fcc-c5c9c331914b";
+    "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
 
 const CHARACTERISTIC_UUID =
-"beb5483e-36e1-4688-b7f5-ea07361b26a8";
+    "beb5483e-36e1-4688-b7f5-ea07361b26a8";
 
 
 let device = null;
+
 let characteristic = null;
 
 
@@ -271,21 +716,13 @@ let characteristic = null;
    Graph settings
 ================================================== */
 
-/*
-   ATOM Lite:
-   100 Hz = 100 samples / second
-
-   Display:
-   10 seconds × 100 Hz
-   = 1000 points
-*/
-
 const SAMPLE_RATE = 100;
 
 const DISPLAY_SECONDS = 10;
 
 const MAX_POINTS =
-    SAMPLE_RATE * DISPLAY_SECONDS;
+    SAMPLE_RATE *
+    DISPLAY_SECONDS;
 
 
 let graphData = [];
@@ -296,7 +733,9 @@ let graphData = [];
 ================================================== */
 
 const canvas =
-    document.getElementById("gsrChart");
+    document.getElementById(
+        "gsrChart"
+    );
 
 const ctx =
     canvas.getContext("2d");
@@ -307,25 +746,39 @@ const ctx =
 ================================================== */
 
 const connectButton =
-    document.getElementById("connectButton");
+    document.getElementById(
+        "connectButton"
+    );
 
 const disconnectButton =
-    document.getElementById("disconnectButton");
+    document.getElementById(
+        "disconnectButton"
+    );
 
 const status =
-    document.getElementById("status");
+    document.getElementById(
+        "status"
+    );
 
 const rawGSR =
-    document.getElementById("rawGSR");
+    document.getElementById(
+        "rawGSR"
+    );
 
 const voltage =
-    document.getElementById("voltage");
+    document.getElementById(
+        "voltage"
+    );
 
 const elapsed =
-    document.getElementById("elapsed");
+    document.getElementById(
+        "elapsed"
+    );
 
 const log =
-    document.getElementById("log");
+    document.getElementById(
+        "log"
+    );
 
 
 /* ==================================================
@@ -335,15 +788,36 @@ const log =
 function addLog(message) {
 
     const time =
-        new Date().toLocaleTimeString();
+        new Date()
+        .toLocaleTimeString();
 
     log.innerHTML +=
-        "[" + time + "] " +
+        "[" +
+        time +
+        "] " +
         message +
         "<br>";
 
     log.scrollTop =
         log.scrollHeight;
+}
+
+
+/* ==================================================
+   Status
+================================================== */
+
+function setStatus(
+    text,
+    type
+) {
+
+    status.textContent =
+        text;
+
+    status.className =
+        "status " +
+        type;
 }
 
 
@@ -357,8 +831,10 @@ connectButton.addEventListener(
 
         try {
 
-            status.textContent =
-                "Bluetoothデバイスを検索中...";
+            setStatus(
+                "● 接続中...",
+                "connecting"
+            );
 
             addLog(
                 "Bluetoothデバイスを検索しています..."
@@ -388,8 +864,10 @@ connectButton.addEventListener(
             );
 
 
-            status.textContent =
-                "接続中...";
+            setStatus(
+                "● 接続中...",
+                "connecting"
+            );
 
 
             const server =
@@ -422,8 +900,10 @@ connectButton.addEventListener(
             );
 
 
-            status.textContent =
-                "🟢 接続済み";
+            setStatus(
+                "● 接続中",
+                "connected"
+            );
 
 
             connectButton.disabled =
@@ -443,8 +923,12 @@ connectButton.addEventListener(
 
             console.error(error);
 
-            status.textContent =
-                "接続できませんでした";
+
+            setStatus(
+                "● 未接続",
+                "disconnected"
+            );
+
 
             addLog(
                 "エラー: " +
@@ -480,14 +964,18 @@ disconnectButton.addEventListener(
 
 function onDisconnected() {
 
-    status.textContent =
-        "🔴 切断";
+    setStatus(
+        "● 未接続",
+        "disconnected"
+    );
+
 
     connectButton.disabled =
         false;
 
     disconnectButton.disabled =
         true;
+
 
     addLog(
         "Bluetooth切断"
@@ -505,6 +993,7 @@ function handleData(event) {
     const decoder =
         new TextDecoder();
 
+
     const text =
         decoder.decode(
             event.target.value
@@ -517,7 +1006,8 @@ function handleData(event) {
     */
 
     const parts =
-        text.trim().split(",");
+        text.trim()
+        .split(",");
 
 
     if(parts.length < 3) {
@@ -549,23 +1039,26 @@ function handleData(event) {
 
 
     /* ---------------------------------------------
-       Update current values
+       Current values
     --------------------------------------------- */
 
     rawGSR.textContent =
         gsr;
 
+
     voltage.textContent =
         volt.toFixed(3) +
         " V";
 
+
     elapsed.textContent =
-        (millis / 1000).toFixed(1) +
+        (millis / 1000)
+        .toFixed(1) +
         " s";
 
 
     /* ---------------------------------------------
-       Add data to graph
+       Graph
     --------------------------------------------- */
 
     graphData.push({
@@ -576,10 +1069,6 @@ function handleData(event) {
 
     });
 
-
-    /*
-       Keep only the latest 10 seconds
-    */
 
     if(
         graphData.length >
@@ -607,14 +1096,17 @@ function drawGraph() {
 
 
     const dpr =
-        window.devicePixelRatio || 1;
+        window.devicePixelRatio ||
+        1;
 
 
     canvas.width =
-        rect.width * dpr;
+        rect.width *
+        dpr;
 
     canvas.height =
-        rect.height * dpr;
+        rect.height *
+        dpr;
 
 
     ctx.setTransform(
@@ -634,10 +1126,6 @@ function drawGraph() {
         rect.height;
 
 
-    /* ---------------------------------------------
-       Clear
-    --------------------------------------------- */
-
     ctx.clearRect(
         0,
         0,
@@ -646,13 +1134,15 @@ function drawGraph() {
     );
 
 
-    if(graphData.length < 2) {
+    if(
+        graphData.length < 2
+    ) {
 
         ctx.fillStyle =
-            "#666";
+            "#78909c";
 
         ctx.font =
-            "16px Arial";
+            "15px Arial";
 
         ctx.fillText(
             "GSRデータを待っています...",
@@ -666,12 +1156,7 @@ function drawGraph() {
 
 
     /* ---------------------------------------------
-       Y-axis range
-
-       Calculate the recent range.
-
-       Add padding so the waveform does not
-       touch the top/bottom.
+       Y range
     --------------------------------------------- */
 
     let minGSR =
@@ -680,6 +1165,7 @@ function drawGraph() {
                 p => p.gsr
             )
         );
+
 
     let maxGSR =
         Math.max(
@@ -690,18 +1176,16 @@ function drawGraph() {
 
 
     let range =
-        maxGSR - minGSR;
+        maxGSR -
+        minGSR;
 
-
-    /*
-       If the signal is very stable,
-       use a minimum range.
-    */
 
     if(range < 20) {
 
         const center =
-            (maxGSR + minGSR) / 2;
+            (maxGSR +
+             minGSR) / 2;
+
 
         minGSR =
             center - 10;
@@ -714,10 +1198,6 @@ function drawGraph() {
     }
 
 
-    /*
-       Add 15% padding
-    */
-
     const padding =
         range * 0.15;
 
@@ -728,22 +1208,23 @@ function drawGraph() {
 
 
     /* ---------------------------------------------
-       Graph margins
+       Margins
     --------------------------------------------- */
 
-    const marginLeft = 55;
+    const marginLeft = 60;
 
-    const marginRight = 15;
+    const marginRight = 20;
 
     const marginTop = 25;
 
-    const marginBottom = 40;
+    const marginBottom = 42;
 
 
     const graphWidth =
         width -
         marginLeft -
         marginRight;
+
 
     const graphHeight =
         height -
@@ -752,25 +1233,40 @@ function drawGraph() {
 
 
     /* ---------------------------------------------
+       Background
+    --------------------------------------------- */
+
+    ctx.fillStyle =
+        "#fbfcfd";
+
+    ctx.fillRect(
+        marginLeft,
+        marginTop,
+        graphWidth,
+        graphHeight
+    );
+
+
+    /* ---------------------------------------------
        Horizontal grid
     --------------------------------------------- */
 
     ctx.strokeStyle =
-        "#dddddd";
+        "#dfe6e9";
 
     ctx.lineWidth = 1;
 
 
     for(
         let i = 0;
-        i <= 4;
+        i <= 5;
         i++
     ) {
 
         const y =
             marginTop +
             graphHeight *
-            i / 4;
+            i / 5;
 
 
         ctx.beginPath();
@@ -791,11 +1287,11 @@ function drawGraph() {
         const value =
             maxGSR -
             (maxGSR - minGSR) *
-            i / 4;
+            i / 5;
 
 
         ctx.fillStyle =
-            "#555";
+            "#607d8b";
 
         ctx.font =
             "12px Arial";
@@ -803,7 +1299,7 @@ function drawGraph() {
 
         ctx.fillText(
             Math.round(value),
-            5,
+            8,
             y + 4
         );
 
@@ -812,24 +1308,22 @@ function drawGraph() {
 
     /* ---------------------------------------------
        Vertical grid
-
-       0, 2.5, 5, 7.5, 10 seconds
     --------------------------------------------- */
 
     ctx.strokeStyle =
-        "#eeeeee";
+        "#edf1f2";
 
 
     for(
         let i = 0;
-        i <= 4;
+        i <= 5;
         i++
     ) {
 
         const x =
             marginLeft +
             graphWidth *
-            i / 4;
+            i / 5;
 
 
         ctx.beginPath();
@@ -849,11 +1343,11 @@ function drawGraph() {
 
         const seconds =
             DISPLAY_SECONDS *
-            i / 4;
+            i / 5;
 
 
         ctx.fillStyle =
-            "#555";
+            "#607d8b";
 
         ctx.font =
             "12px Arial";
@@ -861,9 +1355,12 @@ function drawGraph() {
 
         ctx.fillText(
             "-" +
-            (DISPLAY_SECONDS - seconds).toFixed(1) +
+            (
+                DISPLAY_SECONDS -
+                seconds
+            ).toFixed(1) +
             " s",
-            x - 12,
+            x - 14,
             height - 15
         );
 
@@ -871,7 +1368,7 @@ function drawGraph() {
 
 
     /* ---------------------------------------------
-       GSR waveform
+       Waveform
     --------------------------------------------- */
 
     ctx.beginPath();
@@ -925,11 +1422,72 @@ function drawGraph() {
 
 
     ctx.strokeStyle =
-        "#1976d2";
+        "#1565c0";
 
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 2.5;
+
+    ctx.lineJoin =
+        "round";
+
+    ctx.lineCap =
+        "round";
 
     ctx.stroke();
+
+
+    /* ---------------------------------------------
+       Current value marker
+    --------------------------------------------- */
+
+    if(graphData.length > 0) {
+
+        const last =
+            graphData[
+                graphData.length - 1
+            ];
+
+
+        const x =
+            marginLeft +
+            graphWidth *
+            (
+                graphData.length - 1
+            ) /
+            (MAX_POINTS - 1);
+
+
+        const y =
+            marginTop +
+            graphHeight *
+            (
+                1 -
+                (
+                    last.gsr -
+                    minGSR
+                ) /
+                (
+                    maxGSR -
+                    minGSR
+                )
+            );
+
+
+        ctx.beginPath();
+
+        ctx.arc(
+            x,
+            y,
+            4,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.fillStyle =
+            "#1565c0";
+
+        ctx.fill();
+
+    }
 
 
     /* ---------------------------------------------
@@ -937,7 +1495,7 @@ function drawGraph() {
     --------------------------------------------- */
 
     ctx.strokeStyle =
-        "#333";
+        "#90a4ae";
 
     ctx.lineWidth = 1;
 
@@ -967,7 +1525,7 @@ function drawGraph() {
     --------------------------------------------- */
 
     ctx.fillStyle =
-        "#555";
+        "#546e7a";
 
     ctx.font =
         "12px Arial";
@@ -975,14 +1533,14 @@ function drawGraph() {
 
     ctx.fillText(
         "Raw GSR",
-        5,
+        8,
         15
     );
 
 
     ctx.fillText(
         "時間（直近10秒）",
-        width - 105,
+        width - 110,
         height - 15
     );
 
@@ -1009,4 +1567,3 @@ drawGraph();
 
 </body>
 </html>
-```
